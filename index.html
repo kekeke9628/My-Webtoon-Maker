@@ -30,7 +30,6 @@
       box-sizing: border-box;
     }
 
-    /* 상단 제어 패널 */
     #control-panel {
       width: 100%;
       box-sizing: border-box;
@@ -39,7 +38,6 @@
       border-bottom: 1px solid #27272a;
     }
 
-    /* 하단 실시간 웹툰 캔버스 결과창 */
     #canvas-area {
       flex: 1;
       width: 100%;
@@ -53,14 +51,28 @@
       overflow-y: auto;
     }
 
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
     .panel-title {
       font-size: 1.25rem;
       font-weight: bold;
       color: #facc15;
-      margin: 0 0 15px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      margin: 0;
+    }
+
+    .btn-toggle-setup {
+      background: #3f3f46;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
     }
 
     .input-row {
@@ -68,6 +80,12 @@
       flex-direction: column;
       gap: 12px;
       margin-bottom: 15px;
+    }
+
+    /* 토글 애니메이션을 위한 기본 스타일 */
+    #setup-section {
+      transition: all 0.3s ease-in-out;
+      overflow: hidden;
     }
 
     .input-group label {
@@ -104,14 +122,8 @@
       cursor: pointer;
       width: 100%;
       font-size: 0.95rem;
-      transition: background 0.2s;
     }
 
-    .btn-submit:hover {
-      background: #eab308;
-    }
-
-    /* 결과물 뷰어 스타일 */
     .webtoon-card {
       width: 100%;
       max-width: 400px;
@@ -121,7 +133,6 @@
       padding: 12px;
       box-sizing: border-box;
       text-align: center;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     }
 
     .image-container {
@@ -168,24 +179,28 @@
 <body>
 
   <div id="main-container">
-    
     <div id="control-panel">
-      <div class="panel-title">🎨 AI 웹툰 제작실 (올인원 무료판)</div>
+      <div class="panel-header">
+        <div class="panel-title">🎨 AI 웹툰 제작실</div>
+        <button id="toggle-btn" class="btn-toggle-setup" onclick="toggleSetupSection()" style="display: none;">⚙️ 캐릭터/API 변경</button>
+      </div>
       
       <div class="input-row">
-        <div class="input-group">
-          <label for="api-key">Gemini API Key</label>
-          <input type="password" id="api-key" class="input-control" placeholder="AI Studio에서 발급받은 키 입력">
-        </div>
+        <div id="setup-section">
+          <div class="input-group" style="margin-bottom: 12px;">
+            <label for="api-key">Gemini API Key</label>
+            <input type="password" id="api-key" class="input-control" placeholder="AI Studio에서 발급받은 키 입력">
+          </div>
 
-        <div class="input-group">
-          <label for="ref-image">1. 주인공 캐릭터 레퍼런스 파일</label>
-          <input type="file" id="ref-image" class="input-control" accept="image/*">
+          <div class="input-group" style="margin-bottom: 12px;">
+            <label for="ref-image">1. 주인공 캐릭터 레퍼런스 파일</label>
+            <input type="file" id="ref-image" class="input-control" accept="image/*">
+          </div>
         </div>
 
         <div class="input-group">
           <label for="scene-text">2. 연출할 에피소드 장면 묘사</label>
-          <textarea id="scene-text" class="input-control" placeholder="예: 주인공 사각이가 바나나 껍질을 밟고 깜짝 놀라며 뒤로 쾅 자빠지는 개그 장면"></textarea>
+          <textarea id="scene-text" class="input-control" placeholder="예: 주인공 사각이가 바나나 껍질을 밟고 넘어지는 장면"></textarea>
         </div>
       </div>
 
@@ -206,17 +221,16 @@
         <div id="result-prompt" class="prompt-box"></div>
       </div>
     </div>
-
   </div>
 
   <script>
-    // 브라우저 캐시에서 기존 키 불러오기
     window.onload = function() {
       const savedKey = localStorage.getItem('gemini_free_api_key');
-      if (savedKey) document.getElementById('api-key').value = savedKey;
+      if (savedKey) {
+        document.getElementById('api-key').value = savedKey;
+      }
     };
 
-    // 이미지를 백엔드 바이너리 스트림으로 변환
     function fileToGenerativePart(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -227,7 +241,16 @@
       });
     }
 
-    // 메인 무과금 통합 생성 파이프라인 엔진
+    // 설정 영역 여닫는 헬퍼 기능
+    function toggleSetupSection() {
+      const setupSection = document.getElementById('setup-section');
+      if (setupSection.style.display === "none") {
+        setupSection.style.display = "block";
+      } else {
+        setupSection.style.display = "none";
+      }
+    }
+
     async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const fileInput = document.getElementById('ref-image');
@@ -236,27 +259,28 @@
       const resultCard = document.getElementById('webtoon-result-card');
       const resultImg = document.getElementById('result-img');
       const resultPrompt = document.getElementById('result-prompt');
+      
+      const setupSection = document.getElementById('setup-section');
+      const toggleBtn = document.getElementById('toggle-btn');
 
       if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요."); return; }
       if (!fileInput.files[0] || !sceneText) { alert("레퍼런스 이미지와 연출 장면을 모두 입력해 주세요!"); return; }
 
-      // 키 저장
       localStorage.setItem('gemini_free_api_key', apiKeyInput);
       
       resultCard.style.display = "none";
       statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1단계]</strong> Gemini Pro가 캐릭터의 그림체 무드와 외형 특징을 정밀 분석하는 중...";
+      statusViewer.innerHTML = "⏳ <strong>[1단계]</strong> Gemini AI가 캐릭터 스타일과 화풍을 연산하는 중...";
 
       try {
-        // 1단계: Gemini Pro 멀티모달 프롬프트 추출 호출
         const imagePart = await fileToGenerativePart(fileInput.files[0]);
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const geminiPayload = {
           contents: [{
             parts: [
               imagePart,
-              { text: "당신은 명랑만화 작가입니다. 첨부된 레퍼런스 이미지 속 인물의 외형 특징(머리 스타일, 옷, 얼굴형)과 선화 화풍, 채색 스타일을 100% 그대로 계승하세요. 이 화풍과 인물 조건을 완벽하게 유지한 채로, 다음 상황을 연출하는 이미지 생성용 고해상도 영문 프롬프트(Webtoon comic strip cuts style)를 오직 한 단락의 텍스트로만 리턴하세요. 장면: " + sceneText }
+              { text: "당신은 만화가입니다. 제공된 이미지 속 캐릭터의 외형 특징, 드로잉 스타일, 고유한 색감을 완벽하게 계승하세요. 이 화풍을 지킨 상태로 다음 장면을 묘사하는 이미지 생성용 상세 영어 프롬프트를 한 문단으로 작성하세요. 장면: " + sceneText }
             ]
           }]
         };
@@ -269,39 +293,44 @@
         
         const geminiData = await geminiResponse.json();
         
-        if (!geminiData.candidates || !geminiData.candidates[0].content.parts[0].text) {
-          throw new Error("Gemini 스타일 분석 실패. API Key 혹은 이미지를 확인하세요.");
+        if (geminiData.error) {
+          throw new Error(`구글 서버 에러: ${geminiData.error.message}`);
         }
+        
+        if (!geminiData.candidates || !geminiData.candidates[0].content.parts[0].text) {
+          throw new Error("스타일 분석 실패. API Key나 이미지가 정상인지 확인하세요.");
+        }
+
+        // 인증 및 분석에 성공했으므로 불필요한 입력 패널 숨기기 처리
+        setupSection.style.display = "none";
+        toggleBtn.style.display = "block"; // 언제든 바꿀 수 있게 전환 스위치 노출
 
         const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
         
-        // 2단계: 오픈소스 무료 이미지 생성 인프라(Hugging Face Inference)를 활용해 즉시 그림 그리기
-        statusViewer.innerHTML = "🚀 <strong>[2단계]</strong> 분석된 일관성을 바탕으로 웹툰 이미지 컷을 실시간 그리는 중 (약 5~10초 소요)...";
+        statusViewer.innerHTML = "🚀 <strong>[2단계]</strong> 분석된 스타일을 바탕으로 웹툰 이미지 생성 중 (약 5~10초 소요)...";
 
-        // 애니메이션/웹툰 화풍에 가장 특화된 무료 배포 오픈소스 스페이스 엔드포인트 활용
         const txt2imgUrl = "https://api-inference.huggingface.co/models/Lykon/dreamshaper-8";
         
         const imgResponse = await fetch(txt2imgUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: optimizedPrompt + ", webtoon style, comic book panel, colored linear art, high quality" })
+          body: JSON.stringify({ inputs: optimizedPrompt + ", webtoon style, comic panel, flat color linear art" })
         });
 
         if (!imgResponse.ok) {
-          throw new Error("이미지 생성 인프라 일시적 지연. 잠시 후 다시 시도해 주세요.");
+          throw new Error("이미지 서버 트래픽 혼잡. 잠시 후 다시 시도해 주세요.");
         }
 
         const imageBlob = await imgResponse.blob();
         const objectURL = URL.createObjectURL(imageBlob);
 
-        // 결과 화면에 뿌리기
         statusViewer.style.display = "none";
         resultCard.style.display = "block";
         resultImg.src = objectURL;
         resultPrompt.innerText = optimizedPrompt;
 
       } catch (error) {
-        statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:bold;">❌ 파이프라인 에러 발생</span><br>${error.message}`;
+        statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:bold;">❌ 오류 발생</span><br>${error.message}`;
       }
     }
   </script>
