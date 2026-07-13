@@ -107,7 +107,6 @@
       line-height: 1.5;
     }
 
-    /* 모델 선택기 전용 스타일 */
     #model-selectors {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
@@ -296,7 +295,7 @@
         <div id="setup-section">
           
           <div class="input-group" style="margin-bottom: 16px;">
-            <label for="api-key">🔑 Gemini API Key</label>
+            <label for="api-key">🔑 Gemini API Key (무료 기획용)</label>
             <div style="display: flex; gap: 8px;">
               <input type="password" id="api-key" class="input-control" placeholder="AI Studio 키 입력" style="flex: 1;">
               <button class="btn-toggle-setup" style="padding: 0 16px; border-radius: 12px; background: #3b82f6; color: #fff; font-weight: 800; border: none;" onclick="loadModels()">연동🔄</button>
@@ -304,12 +303,9 @@
           </div>
 
           <div id="model-selectors">
-            <span style="font-size: 0.85rem; font-weight: bold; color: #1e3a8a; margin-bottom: 12px; display: block;">✅ 내 계정 사용 가능 모델</span>
-            <label class="model-select-label">텍스트/추천 모델 (에러 시 변경)</label>
-            <select id="text-model" class="input-control" style="margin-bottom: 12px; padding: 8px; font-size: 0.85rem;"></select>
-            
-            <label class="model-select-label">웹툰 그리기 전용 모델</label>
-            <select id="image-model" class="input-control" style="padding: 8px; font-size: 0.85rem;"></select>
+            <span style="font-size: 0.85rem; font-weight: bold; color: #1e3a8a; margin-bottom: 12px; display: block;">✅ 기획 전용 AI 통과 (유료 이미지는 제외됨)</span>
+            <label class="model-select-label">기획/분석용 텍스트 모델 (Gemini)</label>
+            <select id="text-model" class="input-control" style="margin-bottom: 4px; padding: 8px; font-size: 0.85rem;"></select>
           </div>
 
           <div id="character-list">
@@ -318,7 +314,7 @@
               <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
               <div class="char-input-grid">
                 <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)" value="사각이">
-                <input type="text" class="input-control char-traits" placeholder="특징 (예: 활발함)">
+                <input type="text" class="input-control char-traits" placeholder="특징 (예: 귀여움, 활발함)">
               </div>
             </div>
           </div>
@@ -354,7 +350,7 @@
           ⬇️ 내 폰에 갤러리로 저장하기
         </button>
 
-        <div style="font-size: 0.9rem; font-weight: 800; color: #334155; text-align: left;">🤖 구글 AI 프롬프트 기록 :</div>
+        <div style="font-size: 0.9rem; font-weight: 800; color: #334155; text-align: left;">🤖 구글 기획 프롬프트 기록 :</div>
         <div id="result-prompt" class="prompt-box"></div>
       </div>
     </div>
@@ -367,7 +363,6 @@
       const savedKey = localStorage.getItem('gemini_free_api_key');
       if (savedKey) {
         document.getElementById('api-key').value = savedKey;
-        // 페이지 로드 시 키가 있으면 자동으로 모델을 스캔해옵니다.
         loadModels(true);
       }
     };
@@ -441,7 +436,7 @@
       return chars;
     }
 
-    // --- 💡 구글 서버에서 허용된 모델만 가져와 꽂아넣는 스캐너 ---
+    // --- Gemini 텍스트 전용 스캐너 ---
     async function loadModels(silent = false) {
       const apiKey = document.getElementById('api-key').value.trim();
       if (!apiKey) {
@@ -456,12 +451,10 @@
         if (data.error) throw new Error(data.error.message);
         
         const textSelect = document.getElementById('text-model');
-        const imgSelect = document.getElementById('image-model');
-        textSelect.innerHTML = ""; imgSelect.innerHTML = "";
+        textSelect.innerHTML = "";
         
-        // 권한 스캔 필터링
+        // 텍스트/멀티모달 기능(generateContent)만 스캔 (유료 이미지 권한 스캔 삭제)
         const validText = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
-        const validImg = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("predict"));
         
         validText.forEach(m => {
           let opt = document.createElement('option');
@@ -469,28 +462,20 @@
           textSelect.appendChild(opt);
         });
         
-        validImg.forEach(m => {
-          let opt = document.createElement('option');
-          opt.value = m.name; opt.text = m.displayName || m.name;
-          imgSelect.appendChild(opt);
-        });
-        
-        // 오류가 적은 가장 안정적인 모델 우선 선택 처리
-        let defaultText = validText.find(m => m.name === "models/gemini-1.5-flash") || validText[0];
+        let defaultText = validText.find(m => m.name.includes("gemini-1.5-flash")) || validText[0];
         if(defaultText) textSelect.value = defaultText.name;
 
         document.getElementById('model-selectors').style.display = "block";
         localStorage.setItem('gemini_free_api_key', apiKey);
         
-        if (!silent) alert("✅ 계정에 허용된 AI 모델 목록을 성공적으로 불러왔습니다!");
+        if (!silent) alert("✅ 구글 기획 AI(텍스트 분석) 모델 연동 완료!");
         return true;
       } catch (error) {
-        if (!silent) alert("모델 불러오기 실패: " + error.message);
+        if (!silent) alert("연동 실패: " + error.message);
         return false;
       }
     }
 
-    // 에피소드 추천 기능
     async function suggestEpisode() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const textModelName = document.getElementById('text-model').value;
@@ -498,20 +483,19 @@
       
       if (!apiKeyInput) { alert("먼저 Gemini API Key를 입력해주세요!"); return; }
       if (!textModelName) { 
-        alert("선택된 텍스트 모델이 없습니다. [연동🔄] 버튼을 눌러주세요."); 
+        alert("선택된 AI 모델이 없습니다. [연동🔄] 버튼을 눌러주세요."); 
         await loadModels(); 
         return; 
       }
       if (chars.length === 0) { alert("최소 1명 이상의 캐릭터 이름과 특징을 적어주세요!"); return; }
 
       const sceneBox = document.getElementById('scene-text');
-      sceneBox.value = "AI가 에피소드를 상상하고 있습니다... 잠시만 기다려주세요!";
+      sceneBox.value = "구글 AI가 에피소드를 상상하고 있습니다...";
 
       try {
         let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\n");
         const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\n\n[등장인물]\n${charDescriptions}`;
 
-        // 💡 사용자가 콤보박스에서 직접 고른 모델로 통신 (오류 절대 원천 차단)
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${textModelName}:generateContent?key=${apiKeyInput}`;
         
         const response = await fetch(geminiUrl, {
@@ -526,14 +510,13 @@
         sceneBox.value = data.candidates[0].content.parts[0].text.trim();
       } catch (error) {
         sceneBox.value = "";
-        alert("에피소드 추천 실패: " + error.message + "\n\n💡 팁: '텍스트 모델 선택' 창에서 다른 모델을 골라보세요!");
+        alert("에피소드 추천 실패: " + error.message);
       }
     }
 
     async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const textModelName = document.getElementById('text-model').value;
-      const imageModelName = document.getElementById('image-model').value;
       const sceneText = document.getElementById('scene-text').value.trim();
       
       const statusViewer = document.getElementById('status-viewer');
@@ -547,10 +530,7 @@
       const charsWithImages = chars.filter(c => c.file !== null);
 
       if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요!"); return; }
-      if (!textModelName || !imageModelName) { 
-        alert("모델 연동이 안 되어 있습니다. 상단 [연동🔄] 버튼을 눌러주세요."); 
-        return; 
-      }
+      if (!textModelName) { alert("모델 연동이 안 되어 있습니다. 상단 [연동🔄] 버튼을 눌러주세요."); return; }
       if (charsWithImages.length === 0) { alert("최소 1개 이상의 캐릭터 이미지를 첨부해주세요!"); return; }
       if (!sceneText) { alert("에피소드 장면 묘사를 적어주세요!"); return; }
 
@@ -561,7 +541,7 @@
       
       resultCard.style.display = "none";
       statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 캐릭터 이미지와 특징을 분석 중입니다...";
+      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 구글 Gemini가 기획/분석을 진행 중입니다...";
 
       try {
         let partsForGemini = [];
@@ -573,9 +553,8 @@
           partsForGemini.push(imagePart);
         }
 
-        partsForGemini.push({ text: `당신은 웹툰 작가입니다. 위 캐릭터들이 모두 등장하여 다음 에피소드를 연기하는 장면을 그리기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
+        partsForGemini.push({ text: `당신은 웹툰 기획자입니다. 위 캐릭터들이 등장하는 다음 장면을 아주 귀엽고 명랑한 애니메이션 화풍으로 생성하기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
 
-        // 💡 콤보박스에서 유저가 선택한 텍스트 모델 호출
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${textModelName}:generateContent?key=${apiKeyInput}`;
         
         const geminiPayload = { contents: [{ parts: partsForGemini }] };
@@ -588,34 +567,29 @@
         
         const geminiData = await geminiResponse.json();
         
-        if (geminiData.error) throw new Error(`[Gemini 분석 오류] ${geminiData.error.message}`);
-        if (!geminiData.candidates) throw new Error("프롬프트 분석에 실패했습니다.");
+        if (geminiData.error) throw new Error(`[Gemini 기획 오류] ${geminiData.error.message}`);
+        if (!geminiData.candidates) throw new Error("프롬프트 기획에 실패했습니다.");
 
         const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
 
-        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 AI가 웹툰을 그리고 있습니다 (약 10초)...";
+        // 💡 2단계: 유료 구글 이미지 대신 무료 오픈소스 그림 AI(Hugging Face)로 즉시 토스
+        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 무료 오픈소스 AI가 웹툰을 그리고 있습니다 (약 10초)...";
 
-        // 💡 콤보박스에서 유저가 선택한 이미지 전용 모델 호출
-        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/${imageModelName}:predict?key=${apiKeyInput}`;
+        const txt2imgUrl = "https://api-inference.huggingface.co/models/Lykon/dreamshaper-8";
         
-        const imagenPayload = {
-          instances: [{ prompt: optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece, cute" }],
-          parameters: { sampleCount: 1, aspectRatio: "1:1" }
-        };
-
-        const imgResponse = await fetch(imagenUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(imagenPayload)
+        const imgResponse = await fetch(txt2imgUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: optimizedPrompt + ", webtoon style, comic panel, masterpiece, extremely cute, flat color" })
         });
 
-        const imgData = await imgResponse.json();
+        if (!imgResponse.ok) {
+          throw new Error("무료 이미지 생성 서버 트래픽이 일시적으로 혼잡합니다. 잠시 후 다시 시도해 주세요.");
+        }
 
-        if (imgData.error) throw new Error(`[Imagen 생성 오류] ${imgData.error.message}`);
-        if (!imgData.predictions || !imgData.predictions[0].bytesBase64Encoded) throw new Error("이미지가 정상적으로 생성되지 않았습니다.");
+        const imageBlob = await imgResponse.blob();
+        const objectURL = URL.createObjectURL(imageBlob);
 
-        const base64Img = imgData.predictions[0].bytesBase64Encoded;
-        const objectURL = "data:image/jpeg;base64," + base64Img;
         window.currentImageUrl = objectURL; 
 
         statusViewer.style.display = "none";
