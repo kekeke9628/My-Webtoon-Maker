@@ -2,604 +2,105 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>나만의 귀여운 웹툰 제작실</title>
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자유로운 웹툰 스튜디오</title>
   <style>
-    /* 워드프레스 스타일 모던/큐트 테마 */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #f8fafc; 
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #334155;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #main-container {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      height: 100%;
-      box-sizing: border-box;
-      background-color: #ffffff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    }
-
-    #control-panel {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 24px;
-      background-color: #ffffff;
-      border-bottom: 2px dashed #e2e8f0;
-      overflow-y: auto;
-    }
-
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .panel-title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-toggle-setup {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #cbd5e1;
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .input-row {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: #334155;
-    }
-
-    .input-control {
-      width: 100%;
-      background: #f8fafc;
-      color: #1e293b;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px;
-      box-sizing: border-box;
-      font-size: 0.95rem;
-    }
-
-    .input-control:focus {
-      outline: none;
-      border-color: #fbbf24;
-      background: #fff;
-    }
-
-    textarea.input-control {
-      height: 100px;
-      resize: none;
-      line-height: 1.5;
-    }
-
-    #model-selectors {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      display: none;
-    }
+    body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+    #container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; }
+    .input-group { margin-bottom: 15px; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #3b82f6; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
     
-    .model-select-label {
-      font-size: 0.8rem;
-      color: #2563eb;
-      font-weight: 700;
-      margin-bottom: 4px;
-      display: block;
-    }
+    #gallery { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .cut-item { border: 1px solid #ddd; padding: 10px; border-radius: 12px; }
+    img { width: 100%; border-radius: 8px; }
 
-    .character-card {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    
-    .character-card-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-top: 0;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .char-input-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .btn-add-char {
-      background: transparent;
-      color: #3b82f6;
-      border: 2px dashed #93c5fd;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      margin-bottom: 16px;
-    }
-    
-    .btn-suggest-episode {
-      background: #ede9fe;
-      color: #6d28d9;
-      border: 1px solid #c4b5fd;
-      padding: 8px 12px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-submit {
-      background: #fbbf24;
-      color: #78350f;
-      font-weight: 800;
-      border: none;
-      padding: 16px;
-      border-radius: 16px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1.1rem;
-      box-shadow: 0 4px 0 #d97706;
-    }
-
-    .btn-submit:active {
-      transform: translateY(4px);
-      box-shadow: none;
-    }
-
-    #canvas-area {
-      flex: 1;
-      padding: 24px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      overflow-y: auto;
-      background-color: #f8fafc;
-    }
-
-    .status-text {
-      font-size: 0.95rem;
-      color: #64748b;
-      text-align: center;
-      line-height: 1.6;
-      padding: 20px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 2px dashed #cbd5e1;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .webtoon-card {
-      width: 100%;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 16px;
-      box-sizing: border-box;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-
-    .image-container {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #f1f5f9;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border: 1px solid #e2e8f0;
-    }
-
-    .image-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .btn-download {
-      background: #3b82f6;
-      color: #ffffff;
-      font-weight: 800;
-      border: none;
-      padding: 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 0 #2563eb;
-    }
-
-    .prompt-box {
-      background: #f1f5f9;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      color: #475569;
-      text-align: left;
-      white-space: pre-wrap;
+    /* 오류 메시지 스타일 개선 */
+    .error-box { 
+      background: #fee2e2; 
+      color: #991b1b; 
+      padding: 20px; 
+      border-radius: 12px; 
+      border: 1px solid #f87171;
+      font-size: 0.95rem; 
+      white-space: pre-wrap; /* 줄바꿈 유지 */
       word-break: break-all;
-      margin-top: 8px;
-      border: 1px solid #e2e8f0;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
-  <div id="main-container">
-    <div id="control-panel">
-      <div class="panel-header">
-        <div class="panel-title">🎨 AI 귀염 웹툰 스튜디오</div>
-        <button id="toggle-btn" class="btn-toggle-setup" onclick="toggleSetupSection()" style="display: none;">⚙️ 설정 펴기</button>
-      </div>
-      
-      <div class="input-row">
-        <div id="setup-section">
-          
-          <div class="input-group" style="margin-bottom: 16px;">
-            <label for="api-key">🔑 Gemini API Key (무료 기획용)</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="password" id="api-key" class="input-control" placeholder="AI Studio 키 입력" style="flex: 1;">
-              <button class="btn-toggle-setup" style="padding: 0 16px; border-radius: 12px; background: #3b82f6; color: #fff; font-weight: 800; border: none;" onclick="loadModels()">연동🔄</button>
-            </div>
-          </div>
-
-          <div id="model-selectors">
-            <span style="font-size: 0.85rem; font-weight: bold; color: #1e3a8a; margin-bottom: 12px; display: block;">✅ 기획 전용 AI 연동 완료</span>
-            <label class="model-select-label">기획/분석용 텍스트 모델 (Gemini)</label>
-            <select id="text-model" class="input-control" style="margin-bottom: 4px; padding: 8px; font-size: 0.85rem;"></select>
-          </div>
-
-          <div id="character-list">
-            <div class="character-card" data-index="1">
-              <h4 class="character-card-title">👤 캐릭터 1</h4>
-              <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
-              <div class="char-input-grid">
-                <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)" value="사각이">
-                <input type="text" class="input-control char-traits" placeholder="특징 (예: 귀여움, 활발함)">
-              </div>
-            </div>
-          </div>
-          
-          <button class="btn-add-char" onclick="addCharacter()">+ 캐릭터 추가하기</button>
-        </div>
-
-        <div class="input-group">
-          <label for="scene-text">📝 만들고 싶은 에피소드 장면</label>
-          <button class="btn-suggest-episode" onclick="suggestEpisode()">
-            💡 AI에게 짧은 에피소드 아이디어 추천받기
-          </button>
-          <textarea id="scene-text" class="input-control" placeholder="직접 입력하거나 위 추천 버튼을 눌러보세요!"></textarea>
-        </div>
-      </div>
-
-      <button class="btn-submit" onclick="startWebtoonPipeline()">✨ 일관성 만화 컷 그리기</button>
-    </div>
-
-    <div id="canvas-area">
-      <div id="status-viewer" class="status-text">
-        1. API 키를 넣고 <strong>[연동🔄]</strong> 버튼을 누르세요.<br>
-        2. 캐릭터 사진과 특징을 채우세요.<br>
-        3. <strong>[만화 컷 그리기]</strong> 버튼을 꾹 눌러주세요!
-      </div>
-      
-      <div id="webtoon-result-card" class="webtoon-card" style="display: none;">
-        <div class="image-container">
-          <img id="result-img" src="" alt="AI 웹툰 생성 결과">
-        </div>
-        
-        <button class="btn-download" onclick="downloadWebtoon()">
-          ⬇️ 내 폰에 갤러리로 저장하기
-        </button>
-
-        <div style="font-size: 0.9rem; font-weight: 800; color: #334155; text-align: left;">🤖 구글 기획 프롬프트 기록 :</div>
-        <div id="result-prompt" class="prompt-box"></div>
-      </div>
-    </div>
+<div id="container">
+  <h2>🎬 자유 컷 웹툰 스튜디오</h2>
+  
+  <div class="input-group">
+    <input type="password" id="api-key" placeholder="Gemini API Key">
   </div>
 
-  <script>
-    let charCount = 1;
+  <div class="input-group">
+    <label>원하는 컷 수 입력</label>
+    <input type="number" id="cut-count" value="5" min="1" max="20">
+  </div>
 
-    window.onload = function() {
-      const savedKey = localStorage.getItem('gemini_free_api_key');
-      if (savedKey) {
-        document.getElementById('api-key').value = savedKey;
-        loadModels(true);
-      }
-    };
+  <div class="input-group">
+    <textarea id="story" rows="4" placeholder="웹툰의 전체 줄거리를 상세히 입력하세요."></textarea>
+  </div>
 
-    function addCharacter() {
-      charCount++;
-      const list = document.getElementById('character-list');
-      const card = document.createElement('div');
-      card.className = 'character-card';
-      card.setAttribute('data-index', charCount);
-      card.innerHTML = `
-        <h4 class="character-card-title">👤 캐릭터 ${charCount}</h4>
-        <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
-        <div class="char-input-grid">
-          <input type="text" class="input-control char-name" placeholder="이름">
-          <input type="text" class="input-control char-traits" placeholder="특징">
-        </div>
+  <button onclick="startWebtoon()">✨ 연속 생성 시작</button>
+
+  <div id="gallery"></div>
+</div>
+
+<script>
+async function startWebtoon() {
+  const apiKey = document.getElementById('api-key').value;
+  const story = document.getElementById('story').value;
+  const cutCount = document.getElementById('cut-count').value;
+  const gallery = document.getElementById('gallery');
+  
+  if(!apiKey || !story) { alert("API키와 줄거리를 확인해주세요."); return; }
+  
+  gallery.innerHTML = "⏳ 시나리오를 분석 중...";
+
+  const prompt = `다음 이야기를 정확히 ${cutCount}개의 컷으로 분할해줘. 각 컷마다 상세한 이미지 생성 프롬프트(영어)를 작성해줘. JSON 형식으로 { "cuts": ["프롬프트1", "프롬프트2", ...] } 형태로만 응답해. 이야기: ${story}`;
+  
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    
+    if (!res.ok) throw new Error(`서버 응답 오류 (상태코드: ${res.status})`);
+    
+    const data = await res.json();
+    if (!data.candidates) throw new Error("분석 결과가 없습니다. API 키를 확인하세요.");
+    
+    const resultText = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '');
+    const json = JSON.parse(resultText);
+
+    gallery.innerHTML = "";
+
+    for (let i = 0; i < json.cuts.length; i++) {
+      const cutDiv = document.createElement('div');
+      cutDiv.className = "cut-item";
+      cutDiv.innerHTML = `<p>컷 ${i+1} 생성 중...</p>`;
+      gallery.appendChild(cutDiv);
+
+      const prompt = json.cuts[i] + ", webtoon style, comic panel, cute";
+      const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${Math.floor(Math.random()*10000)}`;
+      
+      cutDiv.innerHTML = `
+        <p>컷 ${i+1}</p>
+        <img src="${imgUrl}" alt="cut ${i+1}">
       `;
-      list.appendChild(card);
     }
-
-    function toggleSetupSection() {
-      const setupSection = document.getElementById('setup-section');
-      setupSection.style.display = (setupSection.style.display === "none") ? "block" : "none";
-    }
-
-    window.currentImageUrl = "";
-    function downloadWebtoon() {
-      if (!window.currentImageUrl) return;
-      const a = document.createElement('a');
-      a.href = window.currentImageUrl;
-      a.download = `Webtoon_Cut_${new Date().getTime()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    function fileToGenerativePart(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          try {
-            const base64Data = reader.result.split(',')[1];
-            if (!base64Data) throw new Error("이미지 변환 실패");
-            resolve({ inlineData: { data: base64Data, mimeType: file.type } });
-          } catch (e) {
-            reject(e);
-          }
-        };
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function getCharactersData() {
-      const cards = document.querySelectorAll('.character-card');
-      let chars = [];
-      cards.forEach(card => {
-        const fileInput = card.querySelector('.char-img');
-        const name = card.querySelector('.char-name').value.trim();
-        const traits = card.querySelector('.char-traits').value.trim();
-        
-        if (name || traits || (fileInput.files && fileInput.files.length > 0)) {
-          chars.push({
-            file: (fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null,
-            name: name || "이름 미상",
-            traits: traits || "특징 없음"
-          });
-        }
-      });
-      return chars;
-    }
-
-    async function loadModels(silent = false) {
-      const apiKey = document.getElementById('api-key').value.trim();
-      if (!apiKey) {
-        if (!silent) alert("API 키를 먼저 입력해주세요!");
-        return false;
-      }
-      
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await res.json();
-        
-        if (data.error) throw new Error(data.error.message);
-        
-        const textSelect = document.getElementById('text-model');
-        textSelect.innerHTML = "";
-        
-        const validText = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
-        
-        validText.forEach(m => {
-          let opt = document.createElement('option');
-          opt.value = m.name; opt.text = m.displayName || m.name;
-          textSelect.appendChild(opt);
-        });
-        
-        let defaultText = validText.find(m => m.name.includes("flash")) || validText[0];
-        if(defaultText) textSelect.value = defaultText.name;
-
-        document.getElementById('model-selectors').style.display = "block";
-        localStorage.setItem('gemini_free_api_key', apiKey);
-        
-        if (!silent) alert("✅ 구글 기획 AI 모델 연동 완료!");
-        return true;
-      } catch (error) {
-        if (!silent) alert("연동 실패: " + error.message);
-        return false;
-      }
-    }
-
-    async function suggestEpisode() {
-      const apiKeyInput = document.getElementById('api-key').value.trim();
-      const textModelName = document.getElementById('text-model').value;
-      const chars = getCharactersData();
-      
-      if (!apiKeyInput) { alert("먼저 Gemini API Key를 입력해주세요!"); return; }
-      if (!textModelName) { 
-        alert("선택된 AI 모델이 없습니다. [연동🔄] 버튼을 눌러주세요."); 
-        await loadModels(); 
-        return; 
-      }
-      if (chars.length === 0) { alert("최소 1명 이상의 캐릭터 이름과 특징을 적어주세요!"); return; }
-
-      const sceneBox = document.getElementById('scene-text');
-      sceneBox.value = "구글 AI가 에피소드를 상상하고 있습니다...";
-
-      try {
-        let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\n");
-        const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\n\n[등장인물]\n${charDescriptions}`;
-
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${textModelName}:generateContent?key=${apiKeyInput}`;
-        
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-        
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-        
-        sceneBox.value = data.candidates[0].content.parts[0].text.trim();
-      } catch (error) {
-        sceneBox.value = "";
-        alert("에피소드 추천 실패: " + error.message);
-      }
-    }
-
-    async function startWebtoonPipeline() {
-      const apiKeyInput = document.getElementById('api-key').value.trim();
-      const textModelName = document.getElementById('text-model').value;
-      const sceneText = document.getElementById('scene-text').value.trim();
-      
-      const statusViewer = document.getElementById('status-viewer');
-      const resultCard = document.getElementById('webtoon-result-card');
-      const resultImg = document.getElementById('result-img');
-      const resultPrompt = document.getElementById('result-prompt');
-      const setupSection = document.getElementById('setup-section');
-      const toggleBtn = document.getElementById('toggle-btn');
-      
-      const chars = getCharactersData();
-      const charsWithImages = chars.filter(c => c.file !== null);
-
-      if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요!"); return; }
-      if (!textModelName) { alert("모델 연동이 안 되어 있습니다. 상단 [연동🔄] 버튼을 눌러주세요."); return; }
-      if (charsWithImages.length === 0) { alert("최소 1개 이상의 캐릭터 이미지를 첨부해주세요!"); return; }
-      if (!sceneText) { alert("에피소드 장면 묘사를 적어주세요!"); return; }
-
-      localStorage.setItem('gemini_free_api_key', apiKeyInput);
-      
-      setupSection.style.display = "none";
-      toggleBtn.style.display = "block";
-      
-      resultCard.style.display = "none";
-      statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 구글 Gemini가 기획/분석을 진행 중입니다...";
-
-      try {
-        let partsForGemini = [];
-        
-        for (let i = 0; i < charsWithImages.length; i++) {
-          const char = charsWithImages[i];
-          const imagePart = await fileToGenerativePart(char.file);
-          partsForGemini.push({ text: `[등장인물 ${i+1}] 이름: ${char.name}, 성격 및 외형 특징: ${char.traits}` });
-          partsForGemini.push(imagePart);
-        }
-
-        partsForGemini.push({ text: `당신은 웹툰 기획자입니다. 위 캐릭터들이 등장하는 다음 장면을 아주 귀엽고 명랑한 애니메이션 화풍으로 생성하기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
-
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${textModelName}:generateContent?key=${apiKeyInput}`;
-        
-        const geminiPayload = { contents: [{ parts: partsForGemini }] };
-
-        const geminiResponse = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(geminiPayload)
-        });
-        
-        const geminiData = await geminiResponse.json();
-        
-        if (geminiData.error) throw new Error(`[Gemini 기획 오류] ${geminiData.error.message}`);
-        if (!geminiData.candidates) throw new Error("프롬프트 기획에 실패했습니다.");
-
-        const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
-
-        // 💡 2단계: 모바일 CORS 방화벽을 완전히 우회하는 개방형 이미지 AI (Pollinations) 적용
-        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 무료 그림 AI가 웹툰을 그리고 있습니다 (약 5~10초)...";
-
-        const enhancedPrompt = optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece, extremely cute";
-        // fetch를 쓰지 않고 다이렉트로 이미지 URL을 조합하여 모바일 에러 원천 차단
-        const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&nologo=true`;
-
-        // 이미지를 캔버스로 불러와서 다운로드 가능하도록 Blob 처리 (CORS 허용된 서버)
-        const imgResponse = await fetch(imgUrl);
-
-        if (!imgResponse.ok) {
-          throw new Error("이미지 생성 서버에 일시적으로 연결할 수 없습니다.");
-        }
-
-        const imageBlob = await imgResponse.blob();
-        const objectURL = URL.createObjectURL(imageBlob);
-
-        window.currentImageUrl = objectURL; 
-
-        statusViewer.style.display = "none";
-        resultCard.style.display = "block";
-        resultImg.src = objectURL;
-        resultPrompt.innerText = optimizedPrompt;
-
-      } catch (error) {
-        statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:800;">❌ 에러 발생</span><br><br><small style="color:#64748b;">${error.message}</small>`;
-        setupSection.style.display = "block";
-        toggleBtn.style.display = "none";
-      }
-    }
-  </script>
+  } catch (e) {
+    // 개선된 에러 출력 영역
+    gallery.innerHTML = `<div class="error-box"><strong>❌ 오류 발생</strong><br><br>${e.message}</div>`;
+  }
+}
+</script>
 </body>
 </html>
