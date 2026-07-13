@@ -37,6 +37,7 @@
       padding: 24px;
       background-color: #ffffff;
       border-bottom: 2px dashed #e2e8f0;
+      overflow-y: auto;
     }
 
     .panel-header {
@@ -68,10 +69,6 @@
       transition: all 0.2s;
     }
 
-    .btn-toggle-setup:hover {
-      background: #e2e8f0;
-    }
-
     .input-row {
       display: flex;
       flex-direction: column;
@@ -96,7 +93,6 @@
       padding: 12px;
       box-sizing: border-box;
       font-size: 0.95rem;
-      transition: border-color 0.2s;
     }
 
     .input-control:focus {
@@ -170,11 +166,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-suggest-episode:active {
-      background: #ddd6fe;
     }
 
     .btn-submit {
@@ -188,7 +179,6 @@
       width: 100%;
       font-size: 1.1rem;
       box-shadow: 0 4px 0 #d97706;
-      transition: all 0.1s;
     }
 
     .btn-submit:active {
@@ -263,14 +253,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
       margin-bottom: 16px;
       box-shadow: 0 4px 0 #2563eb;
-    }
-
-    .btn-download:active {
-      transform: translateY(4px);
-      box-shadow: none;
     }
 
     .prompt-box {
@@ -303,26 +287,19 @@
             <input type="password" id="api-key" class="input-control" placeholder="AI Studio 키 입력">
           </div>
 
+          <!-- 캐릭터 입력 리스트 (기본 1명만 노출) -->
           <div id="character-list">
             <div class="character-card" data-index="1">
               <h4 class="character-card-title">👤 캐릭터 1</h4>
               <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
               <div class="char-input-grid">
-                <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)" value="사각이">
-                <input type="text" class="input-control char-traits" placeholder="특징 (예: 활발함, 바가지머리)">
-              </div>
-            </div>
-            
-            <div class="character-card" data-index="2">
-              <h4 class="character-card-title">👤 캐릭터 2</h4>
-              <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
-              <div class="char-input-grid">
-                <input type="text" class="input-control char-name" placeholder="이름">
-                <input type="text" class="input-control char-traits" placeholder="특징 (예: 시크함, 뿔테안경)">
+                <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)">
+                <input type="text" class="input-control char-traits" placeholder="특징 (예: 활발함)">
               </div>
             </div>
           </div>
           
+          <!-- 캐릭터 추가 버튼 (필요할 때만 누르기) -->
           <button class="btn-add-char" onclick="addCharacter()">+ 캐릭터 추가하기</button>
         </div>
 
@@ -360,7 +337,8 @@
   </div>
 
   <script>
-    let charCount = 2;
+    // 기본 캐릭터 수 1명으로 시작
+    let charCount = 1;
 
     window.onload = function() {
       const savedKey = localStorage.getItem('gemini_free_api_key');
@@ -421,7 +399,6 @@
       });
     }
 
-    // 캐릭터 정보를 수집하는 헬퍼 함수
     function getCharactersData() {
       const cards = document.querySelectorAll('.character-card');
       let chars = [];
@@ -441,7 +418,7 @@
       return chars;
     }
 
-    // [신규] 에피소드 자동 생성 기능 (텍스트 엔진 전용)
+    // [오류 해결] 안정적인 gemini-1.5-flash 모델로 교체 (에피소드 추천 기능)
     async function suggestEpisode() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const chars = getCharactersData();
@@ -460,9 +437,10 @@
 
       try {
         let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\\n");
-        const promptText = `다음 웹툰 캐릭터 설정들을 바탕으로, 아주 귀엽고 명랑한 1~2문장짜리 단편 에피소드(상황) 1개를 추천해줘. 구구절절한 설명 없이 오직 딱 상황만 짧게 적어줘.\\n\\n[등장인물]\\n${charDescriptions}`;
+        const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\\n\\n[등장인물]\\n${charDescriptions}`;
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKeyInput}`;
+        // 수정됨: gemini-1.5-flash 로 호환성 문제 해결
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const response = await fetch(geminiUrl, {
           method: 'POST',
@@ -482,7 +460,7 @@
       }
     }
 
-    // 메인 이미지 파이프라인
+    // [오류 해결] 메인 파이프라인 엔진 교체
     async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const sceneText = document.getElementById('scene-text').value.trim();
@@ -497,8 +475,8 @@
       const charsWithImages = chars.filter(c => c.file !== null);
 
       if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요!"); return; }
-      if (charsWithImages.length === 0) { alert("최소 1개 이상의 캐릭터 레퍼런스 이미지를 첨부해주세요!"); return; }
-      if (!sceneText) { alert("에피소드 장면 묘사를 적거나 추천받아주세요!"); return; }
+      if (charsWithImages.length === 0) { alert("최소 1개 이상의 캐릭터 이미지를 첨부해주세요!"); return; }
+      if (!sceneText) { alert("에피소드 장면 묘사를 적어주세요!"); return; }
 
       localStorage.setItem('gemini_free_api_key', apiKeyInput);
       
@@ -507,12 +485,11 @@
       
       resultCard.style.display = "none";
       statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 입력된 캐릭터의 이름/특징/이미지 매칭을 분석 중입니다...";
+      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 캐릭터 이미지와 특징을 분석 중입니다...";
 
       try {
         let partsForGemini = [];
         
-        // 캐릭터별로 텍스트 정보와 이미지를 번갈아가며 배열에 담기
         for (let i = 0; i < charsWithImages.length; i++) {
           const char = charsWithImages[i];
           const imagePart = await fileToGenerativePart(char.file);
@@ -520,10 +497,10 @@
           partsForGemini.push(imagePart);
         }
 
-        // 마지막으로 씬 정보 추가
-        partsForGemini.push({ text: `당신은 웹툰 작가입니다. 위에서 제공된 각 등장인물의 외형과 이름, 화풍을 완벽하게 인지하세요. 이 캐릭터들이 모두 등장하여 다음 에피소드를 연기하는 장면을 그리기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
+        partsForGemini.push({ text: `당신은 웹툰 작가입니다. 위 캐릭터들이 모두 등장하여 다음 에피소드를 연기하는 장면을 그리기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKeyInput}`;
+        // 수정됨: 텍스트 추출의 안정성을 위해 gemini-1.5-flash 모델 적용
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const geminiPayload = { contents: [{ parts: partsForGemini }] };
 
@@ -540,9 +517,10 @@
 
         const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
 
-        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 에피소드를 스케치하고 색칠하는 중입니다 (약 10초)...";
+        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 웹툰을 그리고 있습니다 (약 10초)...";
 
-        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKeyInput}`;
+        // 이미지 생성: 구글 Imagen 안정적인 공식 모델 연결
+        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKeyInput}`;
         
         const imagenPayload = {
           instances: [{ prompt: optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece, cute" }],
