@@ -145,13 +145,8 @@
       cursor: pointer;
       width: 100%;
       margin-bottom: 16px;
-      transition: all 0.2s;
     }
     
-    .btn-add-char:hover {
-      background: #eff6ff;
-    }
-
     .btn-suggest-episode {
       background: #ede9fe;
       color: #6d28d9;
@@ -287,7 +282,6 @@
             <input type="password" id="api-key" class="input-control" placeholder="AI Studio 키 입력">
           </div>
 
-          <!-- 캐릭터 입력 리스트 (기본 1명만 노출) -->
           <div id="character-list">
             <div class="character-card" data-index="1">
               <h4 class="character-card-title">👤 캐릭터 1</h4>
@@ -299,7 +293,6 @@
             </div>
           </div>
           
-          <!-- 캐릭터 추가 버튼 (필요할 때만 누르기) -->
           <button class="btn-add-char" onclick="addCharacter()">+ 캐릭터 추가하기</button>
         </div>
 
@@ -337,7 +330,6 @@
   </div>
 
   <script>
-    // 기본 캐릭터 수 1명으로 시작
     let charCount = 1;
 
     window.onload = function() {
@@ -387,9 +379,7 @@
           try {
             const base64Data = reader.result.split(',')[1];
             if (!base64Data) throw new Error("이미지 변환 실패");
-            resolve({
-              inlineData: { data: base64Data, mimeType: file.type }
-            });
+            resolve({ inlineData: { data: base64Data, mimeType: file.type } });
           } catch (e) {
             reject(e);
           }
@@ -418,19 +408,13 @@
       return chars;
     }
 
-    // [오류 해결] 안정적인 gemini-1.5-flash 모델로 교체 (에피소드 추천 기능)
+    // 완전히 gemini-1.5-flash 정식 API로만 작동하도록 고정
     async function suggestEpisode() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const chars = getCharactersData();
       
-      if (!apiKeyInput) {
-        alert("먼저 Gemini API Key를 입력해주세요!");
-        return;
-      }
-      if (chars.length === 0) {
-        alert("최소 1명 이상의 캐릭터 이름과 특징을 적어주세요!");
-        return;
-      }
+      if (!apiKeyInput) { alert("먼저 Gemini API Key를 입력해주세요!"); return; }
+      if (chars.length === 0) { alert("최소 1명 이상의 캐릭터 이름과 특징을 적어주세요!"); return; }
 
       const sceneBox = document.getElementById('scene-text');
       sceneBox.value = "AI가 에피소드를 상상하고 있습니다... 잠시만 기다려주세요!";
@@ -439,15 +423,13 @@
         let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\\n");
         const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\\n\\n[등장인물]\\n${charDescriptions}`;
 
-        // 수정됨: gemini-1.5-flash 로 호환성 문제 해결
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
+        // 정식 v1 버전의 안정적인 flash 모델
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const response = await fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
         
         const data = await response.json();
@@ -460,7 +442,6 @@
       }
     }
 
-    // [오류 해결] 메인 파이프라인 엔진 교체
     async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const sceneText = document.getElementById('scene-text').value.trim();
@@ -499,8 +480,8 @@
 
         partsForGemini.push({ text: `당신은 웹툰 작가입니다. 위 캐릭터들이 모두 등장하여 다음 에피소드를 연기하는 장면을 그리기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
 
-        // 수정됨: 텍스트 추출의 안정성을 위해 gemini-1.5-flash 모델 적용
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
+        // 정식 v1 버전의 안정적인 flash 모델
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const geminiPayload = { contents: [{ parts: partsForGemini }] };
 
@@ -519,7 +500,7 @@
 
         statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 웹툰을 그리고 있습니다 (약 10초)...";
 
-        // 이미지 생성: 구글 Imagen 안정적인 공식 모델 연결
+        // Imagen 3.0 API 호출
         const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKeyInput}`;
         
         const imagenPayload = {
