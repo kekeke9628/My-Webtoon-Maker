@@ -287,7 +287,8 @@
               <h4 class="character-card-title">👤 캐릭터 1</h4>
               <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
               <div class="char-input-grid">
-                <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)">
+                <!-- 이전 기록을 반영하여 기본 이름 세팅 -->
+                <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)" value="사각이">
                 <input type="text" class="input-control char-traits" placeholder="특징 (예: 활발함)">
               </div>
             </div>
@@ -408,7 +409,6 @@
       return chars;
     }
 
-    // 완전히 gemini-1.5-flash 정식 API로만 작동하도록 고정
     async function suggestEpisode() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const chars = getCharactersData();
@@ -421,10 +421,10 @@
 
       try {
         let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\\n");
-        const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\\n\\n[등장인물]\\n${charDescriptions}`;
+        const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\n\n[등장인물]\n${charDescriptions}`;
 
-        // 정식 v1 버전의 안정적인 flash 모델
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
+        // 오류 핵심 수정: v1beta 채널 강제 적용
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const response = await fetch(geminiUrl, {
           method: 'POST',
@@ -480,8 +480,8 @@
 
         partsForGemini.push({ text: `당신은 웹툰 작가입니다. 위 캐릭터들이 모두 등장하여 다음 에피소드를 연기하는 장면을 그리기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
 
-        // 정식 v1 버전의 안정적인 flash 모델
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
+        // 오류 핵심 수정: v1beta 채널 강제 적용
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
         const geminiPayload = { contents: [{ parts: partsForGemini }] };
 
@@ -500,7 +500,7 @@
 
         statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 웹툰을 그리고 있습니다 (약 10초)...";
 
-        // Imagen 3.0 API 호출
+        // 오류 핵심 수정: v1beta 채널 강제 적용 (Imagen API)
         const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKeyInput}`;
         
         const imagenPayload = {
