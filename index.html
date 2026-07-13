@@ -2,22 +2,19 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>나만의 웹툰 제작실 - AI Webtoon Maker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>나만의 귀여운 웹툰 제작실</title>
   
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="나만의 웹툰 제작실">
-  <meta property="og:description" content="Gemini AI로 일관성 있는 주인공 캐릭터와 에피소드 명랑 만화를 기획해보세요!">
-
   <style>
+    /* 워드프레스 스타일의 모던/큐트 라이트 모드 테마 */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      background-color: #0f0f11;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #ffffff;
+      background-color: #f8fafc; /* 부드러운 라이트 블루/그레이 배경 */
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #334155;
       display: flex;
       flex-direction: column;
     }
@@ -26,126 +23,162 @@
       display: flex;
       flex-direction: column;
       width: 100%;
+      max-width: 600px;
+      margin: 0 auto; /* 모바일/PC 중앙 정렬 */
       height: 100%;
       box-sizing: border-box;
+      background-color: #ffffff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
 
+    /* 상단 헤더 및 제어 패널 */
     #control-panel {
       width: 100%;
       box-sizing: border-box;
-      padding: 20px;
-      background-color: #18181b;
-      border-bottom: 1px solid #27272a;
-    }
-
-    #canvas-area {
-      flex: 1;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #0f0f11;
-      overflow-y: auto;
+      padding: 24px;
+      background-color: #ffffff;
+      border-bottom: 2px dashed #e2e8f0;
     }
 
     .panel-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .panel-title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: #facc15;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #0f172a;
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn-toggle-setup {
-      background: #3f3f46;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.75rem;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle-setup:hover {
+      background: #e2e8f0;
     }
 
     .input-row {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-
-    /* 토글 애니메이션을 위한 기본 스타일 */
-    #setup-section {
-      transition: all 0.3s ease-in-out;
-      overflow: hidden;
+      gap: 16px;
+      margin-bottom: 20px;
     }
 
     .input-group label {
       display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #e4e4e7;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #334155;
     }
 
     .input-control {
       width: 100%;
-      background: #27272a;
-      color: #fff;
-      border: 1px solid #3f3f46;
-      border-radius: 6px;
-      padding: 10px;
+      background: #f8fafc;
+      color: #1e293b;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
       box-sizing: border-box;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .input-control:focus {
+      outline: none;
+      border-color: #fbbf24;
+      background: #fff;
     }
 
     textarea.input-control {
-      height: 70px;
+      height: 90px;
       resize: none;
+      line-height: 1.5;
     }
 
+    /* 메인 생성 버튼 (귀여운 노란색 포인트) */
     .btn-submit {
-      background: #facc15;
-      color: #000;
-      font-weight: bold;
+      background: #fbbf24;
+      color: #78350f;
+      font-weight: 800;
       border: none;
-      padding: 12px;
-      border-radius: 6px;
+      padding: 16px;
+      border-radius: 16px;
       cursor: pointer;
       width: 100%;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 0 #d97706;
+      transition: all 0.1s;
+    }
+
+    .btn-submit:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
+
+    /* 하단 결과 캔버스 */
+    #canvas-area {
+      flex: 1;
+      padding: 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-y: auto;
+      background-color: #f8fafc;
+    }
+
+    .status-text {
       font-size: 0.95rem;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.6;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 2px dashed #cbd5e1;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .webtoon-card {
       width: 100%;
-      max-width: 400px;
-      background: #18181b;
-      border: 2px solid #3f3f46;
-      border-radius: 12px;
-      padding: 12px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 16px;
       box-sizing: border-box;
-      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     }
 
     .image-container {
       width: 100%;
       aspect-ratio: 1 / 1;
-      background: #27272a;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      border: 1px solid #3f3f46;
+      border: 1px solid #e2e8f0;
     }
 
     .image-container img {
@@ -154,25 +187,41 @@
       object-fit: cover;
     }
 
-    .status-text {
-      font-size: 0.9rem;
-      color: #a1a1aa;
-      padding: 20px;
-      text-align: center;
-      line-height: 1.5;
+    /* 명확한 모바일 다운로드 버튼 */
+    .btn-download {
+      background: #3b82f6;
+      color: #ffffff;
+      font-weight: 800;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 0 #2563eb;
+    }
+
+    .btn-download:active {
+      transform: translateY(4px);
+      box-shadow: none;
     }
 
     .prompt-box {
-      background: #27272a;
-      padding: 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      color: #facc15;
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #475569;
       text-align: left;
       white-space: pre-wrap;
       word-break: break-all;
       margin-top: 8px;
-      border: 1px solid #3f3f46;
+      border: 1px solid #e2e8f0;
     }
   </style>
 </head>
@@ -181,43 +230,49 @@
   <div id="main-container">
     <div id="control-panel">
       <div class="panel-header">
-        <div class="panel-title">🎨 AI 웹툰 제작실</div>
-        <button id="toggle-btn" class="btn-toggle-setup" onclick="toggleSetupSection()" style="display: none;">⚙️ 캐릭터/API 변경</button>
+        <div class="panel-title">🎨 AI 귀염 웹툰 스튜디오</div>
+        <button id="toggle-btn" class="btn-toggle-setup" onclick="toggleSetupSection()" style="display: none;">⚙️ 설정 펴기</button>
       </div>
       
       <div class="input-row">
         <div id="setup-section">
-          <div class="input-group" style="margin-bottom: 12px;">
-            <label for="api-key">Gemini API Key</label>
-            <input type="password" id="api-key" class="input-control" placeholder="AI Studio에서 발급받은 키 입력">
+          <div class="input-group" style="margin-bottom: 16px;">
+            <label for="api-key">🔑 Gemini API Key (무료 가능)</label>
+            <input type="password" id="api-key" class="input-control" placeholder="AI Studio 키 입력">
           </div>
 
-          <div class="input-group" style="margin-bottom: 12px;">
-            <label for="ref-image">1. 주인공 캐릭터 레퍼런스 파일</label>
-            <input type="file" id="ref-image" class="input-control" accept="image/*">
+          <div class="input-group" style="margin-bottom: 16px;">
+            <label for="ref-images">👥 주인공 캐릭터 이미지 (다중 선택 가능)</label>
+            <input type="file" id="ref-images" class="input-control" accept="image/*" multiple>
+            <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">여러 캐릭터를 한 장면에 넣고 싶다면 파일을 여러 개 선택하세요!</small>
           </div>
         </div>
 
         <div class="input-group">
-          <label for="scene-text">2. 연출할 에피소드 장면 묘사</label>
-          <textarea id="scene-text" class="input-control" placeholder="예: 주인공 사각이가 바나나 껍질을 밟고 넘어지는 장면"></textarea>
+          <label for="scene-text">📝 만들고 싶은 에피소드 장면</label>
+          <textarea id="scene-text" class="input-control" placeholder="예: 주인공 사각이와 친구들이 벚꽃 아래에서 솜사탕을 먹으며 웃는 따뜻한 장면"></textarea>
         </div>
       </div>
 
-      <button class="btn-submit" onclick="startWebtoonPipeline()">일관성 만화 컷 생성하기</button>
+      <button class="btn-submit" onclick="startWebtoonPipeline()">✨ 일관성 만화 컷 그리기</button>
     </div>
 
     <div id="canvas-area">
       <div id="status-viewer" class="status-text">
-        상단에 레퍼런스 이미지와 에피소드 시나리오를 채운 후<br>
-        <strong>[일관성 만화 컷 생성하기]</strong> 버튼을 누르면 이 자리에 컷이 렌더링됩니다.
+        캐릭터 사진들을 넣고 시나리오를 작성한 뒤<br>
+        <strong>[만화 컷 그리기]</strong> 버튼을 꾹 눌러주세요!
       </div>
       
       <div id="webtoon-result-card" class="webtoon-card" style="display: none;">
         <div class="image-container">
           <img id="result-img" src="" alt="AI 웹툰 생성 결과">
         </div>
-        <div style="font-size: 0.85rem; font-weight: bold; color: #fff; text-align: left;">🤖 반영된 일관성 프롬프트 :</div>
+        
+        <button class="btn-download" onclick="downloadWebtoon()">
+          ⬇️ 내 폰에 갤러리로 저장하기
+        </button>
+
+        <div style="font-size: 0.9rem; font-weight: 800; color: #334155; text-align: left;">🤖 구글 AI 프롬프트 기록 :</div>
         <div id="result-prompt" class="prompt-box"></div>
       </div>
     </div>
@@ -231,29 +286,46 @@
       }
     };
 
+    // 이미지 파일을 Base64로 정제하는 함수
     function fileToGenerativePart(file) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve({
-          inlineData: { data: reader.result.split(',')[1], mimeType: file.type }
-        });
+        reader.onloadend = () => {
+          try {
+            const base64Data = reader.result.split(',')[1];
+            if (!base64Data) throw new Error("이미지 변환 실패");
+            resolve({
+              inlineData: { data: base64Data, mimeType: file.type }
+            });
+          } catch (e) {
+            reject(e);
+          }
+        };
+        reader.onerror = error => reject(error);
         reader.readAsDataURL(file);
       });
     }
 
-    // 설정 영역 여닫는 헬퍼 기능
     function toggleSetupSection() {
       const setupSection = document.getElementById('setup-section');
-      if (setupSection.style.display === "none") {
-        setupSection.style.display = "block";
-      } else {
-        setupSection.style.display = "none";
-      }
+      setupSection.style.display = (setupSection.style.display === "none") ? "block" : "none";
+    }
+
+    // 모바일 갤러리 다운로드 트리거 함수
+    window.currentImageUrl = "";
+    function downloadWebtoon() {
+      if (!window.currentImageUrl) return;
+      const a = document.createElement('a');
+      a.href = window.currentImageUrl;
+      a.download = `Webtoon_Cut_${new Date().getTime()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
-      const fileInput = document.getElementById('ref-image');
+      const fileInput = document.getElementById('ref-images');
       const sceneText = document.getElementById('scene-text').value.trim();
       const statusViewer = document.getElementById('status-viewer');
       const resultCard = document.getElementById('webtoon-result-card');
@@ -263,24 +335,28 @@
       const setupSection = document.getElementById('setup-section');
       const toggleBtn = document.getElementById('toggle-btn');
 
-      if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요."); return; }
-      if (!fileInput.files[0] || !sceneText) { alert("레퍼런스 이미지와 연출 장면을 모두 입력해 주세요!"); return; }
+      if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요!"); return; }
+      if (fileInput.files.length === 0 || !sceneText) { alert("캐릭터 이미지와 장면 묘사를 모두 채워주세요!"); return; }
 
       localStorage.setItem('gemini_free_api_key', apiKeyInput);
       
       resultCard.style.display = "none";
       statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1단계]</strong> Gemini AI가 캐릭터 스타일과 화풍을 연산하는 중...";
+      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> Gemini Pro가 다중 캐릭터들의 특징을 정밀하게 분석 중입니다...";
 
       try {
-        const imagePart = await fileToGenerativePart(fileInput.files[0]);
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
+        // 1. 업로드된 모든 다중 이미지를 병렬로 처리
+        const filesArray = Array.from(fileInput.files);
+        const imageParts = await Promise.all(filesArray.map(fileToGenerativePart));
+        
+        // 2. Gemini 1.5 Pro를 활용한 프롬프트 추출 (텍스트 엔진)
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKeyInput}`;
         
         const geminiPayload = {
           contents: [{
             parts: [
-              imagePart,
-              { text: "당신은 만화가입니다. 제공된 이미지 속 캐릭터의 외형 특징, 드로잉 스타일, 고유한 색감을 완벽하게 계승하세요. 이 화풍을 지킨 상태로 다음 장면을 묘사하는 이미지 생성용 상세 영어 프롬프트를 한 문단으로 작성하세요. 장면: " + sceneText }
+              ...imageParts, // 분석할 여러 캐릭터 이미지 투척
+              { text: `당신은 프로 웹툰 작가입니다. 첨부된 ${filesArray.length}장의 레퍼런스 이미지들에 등장하는 캐릭터들의 고유한 외형, 스타일, 색감을 완벽히 파악하세요. 이를 바탕으로 다음 장면을 묘사하는 이미지 생성용 고해상도 영문 프롬프트(Webtoon, comic panel)를 단 한 문단으로 작성하세요. 캐릭터들의 디테일이 유지되어야 합니다. 장면: ${sceneText}` }
             ]
           }]
         };
@@ -293,44 +369,49 @@
         
         const geminiData = await geminiResponse.json();
         
-        if (geminiData.error) {
-          throw new Error(`구글 서버 에러: ${geminiData.error.message}`);
-        }
-        
-        if (!geminiData.candidates || !geminiData.candidates[0].content.parts[0].text) {
-          throw new Error("스타일 분석 실패. API Key나 이미지가 정상인지 확인하세요.");
-        }
-
-        // 인증 및 분석에 성공했으므로 불필요한 입력 패널 숨기기 처리
-        setupSection.style.display = "none";
-        toggleBtn.style.display = "block"; // 언제든 바꿀 수 있게 전환 스위치 노출
+        if (geminiData.error) throw new Error(`[Gemini 오류] ${geminiData.error.message}`);
+        if (!geminiData.candidates) throw new Error("프롬프트 분석에 실패했습니다.");
 
         const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
         
-        statusViewer.innerHTML = "🚀 <strong>[2단계]</strong> 분석된 스타일을 바탕으로 웹툰 이미지 생성 중 (약 5~10초 소요)...";
+        // UI 정리
+        setupSection.style.display = "none";
+        toggleBtn.style.display = "block";
 
-        const txt2imgUrl = "https://api-inference.huggingface.co/models/Lykon/dreamshaper-8";
+        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 분석된 프롬프트로 컷을 그리는 중입니다 (약 10초)...";
+
+        // 3. 구글 Imagen 3 를 활용한 직접 이미지 생성 (이미지 엔진)
+        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKeyInput}`;
         
-        const imgResponse = await fetch(txt2imgUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: optimizedPrompt + ", webtoon style, comic panel, flat color linear art" })
+        const imagenPayload = {
+          instances: [{ prompt: optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece" }],
+          parameters: { sampleCount: 1, aspectRatio: "1:1" }
+        };
+
+        const imgResponse = await fetch(imagenUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(imagenPayload)
         });
 
-        if (!imgResponse.ok) {
-          throw new Error("이미지 서버 트래픽 혼잡. 잠시 후 다시 시도해 주세요.");
-        }
+        const imgData = await imgResponse.json();
 
-        const imageBlob = await imgResponse.blob();
-        const objectURL = URL.createObjectURL(imageBlob);
+        if (imgData.error) throw new Error(`[Imagen 오류] ${imgData.error.message}`);
+        if (!imgData.predictions || !imgData.predictions[0].bytesBase64Encoded) throw new Error("구글 Imagen 응답에 이미지가 없습니다.");
 
+        // Base64를 렌더링 가능하게 조립
+        const base64Img = imgData.predictions[0].bytesBase64Encoded;
+        const objectURL = "data:image/jpeg;base64," + base64Img;
+        window.currentImageUrl = objectURL; // 다운로드용 전역 변수 저장
+
+        // 결과 화면 표출
         statusViewer.style.display = "none";
         resultCard.style.display = "block";
         resultImg.src = objectURL;
         resultPrompt.innerText = optimizedPrompt;
 
       } catch (error) {
-        statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:bold;">❌ 오류 발생</span><br>${error.message}`;
+        statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:800;">❌ 에러 발생</span><br><br><small style="color:#64748b;">${error.message}</small>`;
       }
     }
   </script>
