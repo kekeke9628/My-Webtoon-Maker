@@ -8,8 +8,6 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="나만의 웹툰 제작실">
   <meta property="og:description" content="Gemini AI로 일관성 있는 주인공 캐릭터와 에피소드 명랑 만화를 기획해보세요!">
-  <meta property="og:image" content="https://ais-pre-dc2fkdlsxukleawti5ixu7-60107729179.asia-northeast1.run.app/icon.png">
-  <meta property="og:url" content="https://ais-pre-dc2fkdlsxukleawti5ixu7-60107729179.asia-northeast1.run.app">
 
   <style>
     html, body {
@@ -19,8 +17,9 @@
       height: 100%;
       background-color: #0f0f11;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #ffffff;
       display: flex;
-      flex-direction: column; /* 모바일 대응 레이아웃 상하 배치 */
+      flex-direction: column;
     }
 
     #main-container {
@@ -28,45 +27,54 @@
       flex-direction: column;
       width: 100%;
       height: 100%;
+      box-sizing: border-box;
     }
 
-    #sidebar {
+    /* 상단 제어 패널 */
+    #control-panel {
       width: 100%;
       box-sizing: border-box;
       padding: 20px;
       background-color: #18181b;
       border-bottom: 1px solid #27272a;
-      color: #ffffff;
     }
 
-    #content-area {
+    /* 하단 실시간 웹툰 캔버스 결과창 */
+    #canvas-area {
       flex: 1;
       width: 100%;
-      position: relative;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #0f0f11;
+      overflow-y: auto;
     }
 
     .panel-title {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: bold;
       color: #facc15;
       margin: 0 0 15px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .input-group {
-      margin-bottom: 12px;
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 15px;
     }
 
     .input-group label {
       display: block;
       font-size: 0.85rem;
-      margin-bottom: 5px;
+      font-weight: 600;
+      margin-bottom: 6px;
       color: #e4e4e7;
     }
 
@@ -76,13 +84,13 @@
       color: #fff;
       border: 1px solid #3f3f46;
       border-radius: 6px;
-      padding: 8px;
+      padding: 10px;
       box-sizing: border-box;
       font-size: 0.85rem;
     }
 
     textarea.input-control {
-      height: 60px;
+      height: 70px;
       resize: none;
     }
 
@@ -91,38 +99,69 @@
       color: #000;
       font-weight: bold;
       border: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      transition: background 0.2s;
     }
 
-    #output-result {
-      margin-top: 15px;
+    .btn-submit:hover {
+      background: #eab308;
+    }
+
+    /* 결과물 뷰어 스타일 */
+    .webtoon-card {
+      width: 100%;
+      max-width: 400px;
+      background: #18181b;
+      border: 2px solid #3f3f46;
+      border-radius: 12px;
       padding: 12px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+
+    .image-container {
+      width: 100%;
+      aspect-ratio: 1 / 1;
       background: #27272a;
-      border-radius: 6px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
       border: 1px solid #3f3f46;
-      display: none;
     }
 
-    .result-title {
-      font-size: 0.85rem;
-      font-weight: bold;
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .status-text {
+      font-size: 0.9rem;
+      color: #a1a1aa;
+      padding: 20px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .prompt-box {
+      background: #27272a;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
       color: #facc15;
-      margin-bottom: 5px;
-    }
-
-    #prompt-text {
-      color: #e4e4e7;
-      font-family: monospace;
-      font-size: 0.8rem;
+      text-align: left;
       white-space: pre-wrap;
-      margin: 0;
       word-break: break-all;
-      user-select: all; /* 모바일에서 터치 시 전체 선택 편하게 설정 */
-      -webkit-user-select: all;
+      margin-top: 8px;
+      border: 1px solid #3f3f46;
     }
   </style>
 </head>
@@ -130,48 +169,54 @@
 
   <div id="main-container">
     
-    <div id="sidebar">
-      <div class="panel-title">🎨 캐릭터 일관성 제어 (모바일)</div>
+    <div id="control-panel">
+      <div class="panel-title">🎨 AI 웹툰 제작실 (올인원 무료판)</div>
       
-      <div class="input-group">
-        <label for="api-key">Gemini API Key</label>
-        <input type="password" id="api-key" class="input-control" placeholder="AI Studio에서 발급받은 키 입력">
+      <div class="input-row">
+        <div class="input-group">
+          <label for="api-key">Gemini API Key</label>
+          <input type="password" id="api-key" class="input-control" placeholder="AI Studio에서 발급받은 키 입력">
+        </div>
+
+        <div class="input-group">
+          <label for="ref-image">1. 주인공 캐릭터 레퍼런스 파일</label>
+          <input type="file" id="ref-image" class="input-control" accept="image/*">
+        </div>
+
+        <div class="input-group">
+          <label for="scene-text">2. 연출할 에피소드 장면 묘사</label>
+          <textarea id="scene-text" class="input-control" placeholder="예: 주인공 사각이가 바나나 껍질을 밟고 깜짝 놀라며 뒤로 쾅 자빠지는 개그 장면"></textarea>
+        </div>
       </div>
 
-      <div class="input-group">
-        <label for="ref-image">1. 캐릭터 레퍼런스 이미지 선택</label>
-        <input type="file" id="ref-image" class="input-control" accept="image/*">
-      </div>
-
-      <div class="input-group">
-        <label for="scene-text">2. 에피소드 상황</label>
-        <textarea id="scene-text" class="input-control" placeholder="예: 주인공이 깜짝 놀라 커피를 쏟는 장면"></textarea>
-      </div>
-
-      <button class="btn-submit" onclick="generateConsistentPrompt()">일관성 프롬프트 추출</button>
-
-      <div id="output-result">
-        <div class="result-title">✨ 추출된 프롬프트 (길게 누르면 전체 선택 가능)</div>
-        <p id="prompt-text"></p>
-      </div>
+      <button class="btn-submit" onclick="startWebtoonPipeline()">일관성 만화 컷 생성하기</button>
     </div>
 
-    <div id="content-area">
-      <iframe 
-        id="app-frame"
-        src="https://ais-pre-dc2fkdlsxukleawti5ixu7-60107729179.asia-northeast1.run.app" 
-        allow="camera; microphone; geolocation">
-      </iframe>
+    <div id="canvas-area">
+      <div id="status-viewer" class="status-text">
+        상단에 레퍼런스 이미지와 에피소드 시나리오를 채운 후<br>
+        <strong>[일관성 만화 컷 생성하기]</strong> 버튼을 누르면 이 자리에 컷이 렌더링됩니다.
+      </div>
+      
+      <div id="webtoon-result-card" class="webtoon-card" style="display: none;">
+        <div class="image-container">
+          <img id="result-img" src="" alt="AI 웹툰 생성 결과">
+        </div>
+        <div style="font-size: 0.85rem; font-weight: bold; color: #fff; text-align: left;">🤖 반영된 일관성 프롬프트 :</div>
+        <div id="result-prompt" class="prompt-box"></div>
+      </div>
     </div>
 
   </div>
 
   <script>
+    // 브라우저 캐시에서 기존 키 불러오기
     window.onload = function() {
       const savedKey = localStorage.getItem('gemini_free_api_key');
       if (savedKey) document.getElementById('api-key').value = savedKey;
     };
 
+    // 이미지를 백엔드 바이너리 스트림으로 변환
     function fileToGenerativePart(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -182,52 +227,81 @@
       });
     }
 
-    async function generateConsistentPrompt() {
+    // 메인 무과금 통합 생성 파이프라인 엔진
+    async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const fileInput = document.getElementById('ref-image');
       const sceneText = document.getElementById('scene-text').value.trim();
-      const resultDiv = document.getElementById('output-result');
-      const promptText = document.getElementById('prompt-text');
+      const statusViewer = document.getElementById('status-viewer');
+      const resultCard = document.getElementById('webtoon-result-card');
+      const resultImg = document.getElementById('result-img');
+      const resultPrompt = document.getElementById('result-prompt');
 
       if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요."); return; }
-      if (!fileInput.files[0] || !sceneText) { alert("이미지와 에피소드 상황을 모두 입력해주세요!"); return; }
+      if (!fileInput.files[0] || !sceneText) { alert("레퍼런스 이미지와 연출 장면을 모두 입력해 주세요!"); return; }
 
+      // 키 저장
       localStorage.setItem('gemini_free_api_key', apiKeyInput);
-      promptText.innerText = "제미나이 AI가 스타일 분석 중입니다...";
-      resultDiv.style.display = "block";
+      
+      resultCard.style.display = "none";
+      statusViewer.style.display = "block";
+      statusViewer.innerHTML = "⏳ <strong>[1단계]</strong> Gemini Pro가 캐릭터의 그림체 무드와 외형 특징을 정밀 분석하는 중...";
 
       try {
+        // 1단계: Gemini Pro 멀티모달 프롬프트 추출 호출
         const imagePart = await fileToGenerativePart(fileInput.files[0]);
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
         
-        // 모바일 속도와 성공률을 위해 검증된 1.5-flash 모델 스트림 활용
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`;
-        
-        const promptPayload = {
+        const geminiPayload = {
           contents: [{
             parts: [
               imagePart,
-              { text: "당신은 만화가입니다. 첨부된 이미지 속 캐릭터의 그림체, 외형, 고유 색감을 완벽히 계승하여 다음 상황을 묘사하는 이미지 생성용 상세 영어 프롬프트를 한 단락으로 짜주세요. 장면: " + sceneText }
+              { text: "당신은 명랑만화 작가입니다. 첨부된 레퍼런스 이미지 속 인물의 외형 특징(머리 스타일, 옷, 얼굴형)과 선화 화풍, 채색 스타일을 100% 그대로 계승하세요. 이 화풍과 인물 조건을 완벽하게 유지한 채로, 다음 상황을 연출하는 이미지 생성용 고해상도 영문 프롬프트(Webtoon comic strip cuts style)를 오직 한 단락의 텍스트로만 리턴하세요. 장면: " + sceneText }
             ]
           }]
         };
 
-        const response = await fetch(url, {
+        const geminiResponse = await fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promptPayload)
+          body: JSON.stringify(geminiPayload)
         });
         
-        const data = await response.json();
+        const geminiData = await geminiResponse.json();
         
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-          promptText.innerText = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-          promptText.innerText = "구글 서버 에러: " + data.error.message;
-        } else {
-          promptText.innerText = "분석에 실패했습니다. API 키가 정상인지 확인하세요.";
+        if (!geminiData.candidates || !geminiData.candidates[0].content.parts[0].text) {
+          throw new Error("Gemini 스타일 분석 실패. API Key 혹은 이미지를 확인하세요.");
         }
+
+        const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
+        
+        // 2단계: 오픈소스 무료 이미지 생성 인프라(Hugging Face Inference)를 활용해 즉시 그림 그리기
+        statusViewer.innerHTML = "🚀 <strong>[2단계]</strong> 분석된 일관성을 바탕으로 웹툰 이미지 컷을 실시간 그리는 중 (약 5~10초 소요)...";
+
+        // 애니메이션/웹툰 화풍에 가장 특화된 무료 배포 오픈소스 스페이스 엔드포인트 활용
+        const txt2imgUrl = "https://api-inference.huggingface.co/models/Lykon/dreamshaper-8";
+        
+        const imgResponse = await fetch(txt2imgUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: optimizedPrompt + ", webtoon style, comic book panel, colored linear art, high quality" })
+        });
+
+        if (!imgResponse.ok) {
+          throw new Error("이미지 생성 인프라 일시적 지연. 잠시 후 다시 시도해 주세요.");
+        }
+
+        const imageBlob = await imgResponse.blob();
+        const objectURL = URL.createObjectURL(imageBlob);
+
+        // 결과 화면에 뿌리기
+        statusViewer.style.display = "none";
+        resultCard.style.display = "block";
+        resultImg.src = objectURL;
+        resultPrompt.innerText = optimizedPrompt;
+
       } catch (error) {
-        promptText.innerText = "통신 에러 발생: " + error.message;
+        statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:bold;">❌ 파이프라인 에러 발생</span><br>${error.message}`;
       }
     }
   </script>
