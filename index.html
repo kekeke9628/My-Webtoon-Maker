@@ -6,13 +6,13 @@
   <title>나만의 귀여운 웹툰 제작실</title>
   
   <style>
-    /* 워드프레스 스타일의 모던/큐트 라이트 모드 테마 */
+    /* 워드프레스 스타일 모던/큐트 테마 */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      background-color: #f8fafc; /* 부드러운 라이트 블루/그레이 배경 */
+      background-color: #f8fafc; 
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: #334155;
       display: flex;
@@ -24,14 +24,13 @@
       flex-direction: column;
       width: 100%;
       max-width: 600px;
-      margin: 0 auto; /* 모바일/PC 중앙 정렬 */
+      margin: 0 auto;
       height: 100%;
       box-sizing: border-box;
       background-color: #ffffff;
       box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
 
-    /* 상단 헤더 및 제어 패널 */
     #control-panel {
       width: 100%;
       box-sizing: border-box;
@@ -107,12 +106,77 @@
     }
 
     textarea.input-control {
-      height: 90px;
+      height: 80px;
       resize: none;
       line-height: 1.5;
     }
 
-    /* 메인 생성 버튼 (귀여운 노란색 포인트) */
+    /* 캐릭터 개별 입력 카드 스타일 */
+    .character-card {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    
+    .character-card-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .char-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-add-char {
+      background: transparent;
+      color: #3b82f6;
+      border: 2px dashed #93c5fd;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+    
+    .btn-add-char:hover {
+      background: #eff6ff;
+    }
+
+    .btn-suggest-episode {
+      background: #ede9fe;
+      color: #6d28d9;
+      border: 1px solid #c4b5fd;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-suggest-episode:active {
+      background: #ddd6fe;
+    }
+
     .btn-submit {
       background: #fbbf24;
       color: #78350f;
@@ -132,7 +196,6 @@
       box-shadow: none;
     }
 
-    /* 하단 결과 캔버스 */
     #canvas-area {
       flex: 1;
       padding: 24px;
@@ -187,7 +250,6 @@
       object-fit: cover;
     }
 
-    /* 명확한 모바일 다운로드 버튼 */
     .btn-download {
       background: #3b82f6;
       color: #ffffff;
@@ -237,20 +299,39 @@
       <div class="input-row">
         <div id="setup-section">
           <div class="input-group" style="margin-bottom: 16px;">
-            <label for="api-key">🔑 Gemini API Key (무료 가능)</label>
+            <label for="api-key">🔑 Gemini API Key</label>
             <input type="password" id="api-key" class="input-control" placeholder="AI Studio 키 입력">
           </div>
 
-          <div class="input-group" style="margin-bottom: 16px;">
-            <label for="ref-images">👥 주인공 캐릭터 이미지 (다중 선택 가능)</label>
-            <input type="file" id="ref-images" class="input-control" accept="image/*" multiple>
-            <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">여러 캐릭터를 한 장면에 넣고 싶다면 파일을 여러 개 선택하세요!</small>
+          <div id="character-list">
+            <div class="character-card" data-index="1">
+              <h4 class="character-card-title">👤 캐릭터 1</h4>
+              <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
+              <div class="char-input-grid">
+                <input type="text" class="input-control char-name" placeholder="이름 (예: 사각이)" value="사각이">
+                <input type="text" class="input-control char-traits" placeholder="특징 (예: 활발함, 바가지머리)">
+              </div>
+            </div>
+            
+            <div class="character-card" data-index="2">
+              <h4 class="character-card-title">👤 캐릭터 2</h4>
+              <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
+              <div class="char-input-grid">
+                <input type="text" class="input-control char-name" placeholder="이름">
+                <input type="text" class="input-control char-traits" placeholder="특징 (예: 시크함, 뿔테안경)">
+              </div>
+            </div>
           </div>
+          
+          <button class="btn-add-char" onclick="addCharacter()">+ 캐릭터 추가하기</button>
         </div>
 
         <div class="input-group">
           <label for="scene-text">📝 만들고 싶은 에피소드 장면</label>
-          <textarea id="scene-text" class="input-control" placeholder="예: 주인공 사각이와 친구들이 벚꽃 아래에서 솜사탕을 먹으며 웃는 따뜻한 장면"></textarea>
+          <button class="btn-suggest-episode" onclick="suggestEpisode()">
+            💡 AI에게 짧은 에피소드 아이디어 추천받기
+          </button>
+          <textarea id="scene-text" class="input-control" placeholder="직접 입력하거나 위 추천 버튼을 눌러보세요!"></textarea>
         </div>
       </div>
 
@@ -259,7 +340,7 @@
 
     <div id="canvas-area">
       <div id="status-viewer" class="status-text">
-        캐릭터 사진들을 넣고 시나리오를 작성한 뒤<br>
+        캐릭터 사진과 특징을 넣고 시나리오를 작성한 뒤<br>
         <strong>[만화 컷 그리기]</strong> 버튼을 꾹 눌러주세요!
       </div>
       
@@ -279,6 +360,8 @@
   </div>
 
   <script>
+    let charCount = 2;
+
     window.onload = function() {
       const savedKey = localStorage.getItem('gemini_free_api_key');
       if (savedKey) {
@@ -286,7 +369,39 @@
       }
     };
 
-    // 이미지 파일을 Base64로 정제하는 함수
+    function addCharacter() {
+      charCount++;
+      const list = document.getElementById('character-list');
+      const card = document.createElement('div');
+      card.className = 'character-card';
+      card.setAttribute('data-index', charCount);
+      card.innerHTML = `
+        <h4 class="character-card-title">👤 캐릭터 ${charCount}</h4>
+        <input type="file" class="input-control char-img" accept="image/*" style="margin-bottom: 8px;">
+        <div class="char-input-grid">
+          <input type="text" class="input-control char-name" placeholder="이름">
+          <input type="text" class="input-control char-traits" placeholder="특징">
+        </div>
+      `;
+      list.appendChild(card);
+    }
+
+    function toggleSetupSection() {
+      const setupSection = document.getElementById('setup-section');
+      setupSection.style.display = (setupSection.style.display === "none") ? "block" : "none";
+    }
+
+    window.currentImageUrl = "";
+    function downloadWebtoon() {
+      if (!window.currentImageUrl) return;
+      const a = document.createElement('a');
+      a.href = window.currentImageUrl;
+      a.download = `Webtoon_Cut_${new Date().getTime()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
     function fileToGenerativePart(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -306,60 +421,111 @@
       });
     }
 
-    function toggleSetupSection() {
-      const setupSection = document.getElementById('setup-section');
-      setupSection.style.display = (setupSection.style.display === "none") ? "block" : "none";
+    // 캐릭터 정보를 수집하는 헬퍼 함수
+    function getCharactersData() {
+      const cards = document.querySelectorAll('.character-card');
+      let chars = [];
+      cards.forEach(card => {
+        const fileInput = card.querySelector('.char-img');
+        const name = card.querySelector('.char-name').value.trim();
+        const traits = card.querySelector('.char-traits').value.trim();
+        
+        if (name || traits || (fileInput.files && fileInput.files.length > 0)) {
+          chars.push({
+            file: (fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null,
+            name: name || "이름 미상",
+            traits: traits || "특징 없음"
+          });
+        }
+      });
+      return chars;
     }
 
-    // 모바일 갤러리 다운로드 트리거 함수
-    window.currentImageUrl = "";
-    function downloadWebtoon() {
-      if (!window.currentImageUrl) return;
-      const a = document.createElement('a');
-      a.href = window.currentImageUrl;
-      a.download = `Webtoon_Cut_${new Date().getTime()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+    // [신규] 에피소드 자동 생성 기능 (텍스트 엔진 전용)
+    async function suggestEpisode() {
+      const apiKeyInput = document.getElementById('api-key').value.trim();
+      const chars = getCharactersData();
+      
+      if (!apiKeyInput) {
+        alert("먼저 Gemini API Key를 입력해주세요!");
+        return;
+      }
+      if (chars.length === 0) {
+        alert("최소 1명 이상의 캐릭터 이름과 특징을 적어주세요!");
+        return;
+      }
+
+      const sceneBox = document.getElementById('scene-text');
+      sceneBox.value = "AI가 에피소드를 상상하고 있습니다... 잠시만 기다려주세요!";
+
+      try {
+        let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\\n");
+        const promptText = `다음 웹툰 캐릭터 설정들을 바탕으로, 아주 귀엽고 명랑한 1~2문장짜리 단편 에피소드(상황) 1개를 추천해줘. 구구절절한 설명 없이 오직 딱 상황만 짧게 적어줘.\\n\\n[등장인물]\\n${charDescriptions}`;
+
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKeyInput}`;
+        
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
+        
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        
+        sceneBox.value = data.candidates[0].content.parts[0].text.trim();
+      } catch (error) {
+        sceneBox.value = "";
+        alert("에피소드 추천 실패: " + error.message);
+      }
     }
 
+    // 메인 이미지 파이프라인
     async function startWebtoonPipeline() {
       const apiKeyInput = document.getElementById('api-key').value.trim();
-      const fileInput = document.getElementById('ref-images');
       const sceneText = document.getElementById('scene-text').value.trim();
       const statusViewer = document.getElementById('status-viewer');
       const resultCard = document.getElementById('webtoon-result-card');
       const resultImg = document.getElementById('result-img');
       const resultPrompt = document.getElementById('result-prompt');
-      
       const setupSection = document.getElementById('setup-section');
       const toggleBtn = document.getElementById('toggle-btn');
+      
+      const chars = getCharactersData();
+      const charsWithImages = chars.filter(c => c.file !== null);
 
       if (!apiKeyInput) { alert("Gemini API Key를 입력해주세요!"); return; }
-      if (fileInput.files.length === 0 || !sceneText) { alert("캐릭터 이미지와 장면 묘사를 모두 채워주세요!"); return; }
+      if (charsWithImages.length === 0) { alert("최소 1개 이상의 캐릭터 레퍼런스 이미지를 첨부해주세요!"); return; }
+      if (!sceneText) { alert("에피소드 장면 묘사를 적거나 추천받아주세요!"); return; }
 
       localStorage.setItem('gemini_free_api_key', apiKeyInput);
       
+      setupSection.style.display = "none";
+      toggleBtn.style.display = "block";
+      
       resultCard.style.display = "none";
       statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> Gemini Pro가 다중 캐릭터들의 특징을 정밀하게 분석 중입니다...";
+      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 입력된 캐릭터의 이름/특징/이미지 매칭을 분석 중입니다...";
 
       try {
-        // 1. 업로드된 모든 다중 이미지를 병렬로 처리
-        const filesArray = Array.from(fileInput.files);
-        const imageParts = await Promise.all(filesArray.map(fileToGenerativePart));
+        let partsForGemini = [];
         
-        // 2. Gemini 1.5 Pro를 활용한 프롬프트 추출 (텍스트 엔진)
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKeyInput}`;
+        // 캐릭터별로 텍스트 정보와 이미지를 번갈아가며 배열에 담기
+        for (let i = 0; i < charsWithImages.length; i++) {
+          const char = charsWithImages[i];
+          const imagePart = await fileToGenerativePart(char.file);
+          partsForGemini.push({ text: `[등장인물 ${i+1}] 이름: ${char.name}, 성격 및 외형 특징: ${char.traits}` });
+          partsForGemini.push(imagePart);
+        }
+
+        // 마지막으로 씬 정보 추가
+        partsForGemini.push({ text: `당신은 웹툰 작가입니다. 위에서 제공된 각 등장인물의 외형과 이름, 화풍을 완벽하게 인지하세요. 이 캐릭터들이 모두 등장하여 다음 에피소드를 연기하는 장면을 그리기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
+
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKeyInput}`;
         
-        const geminiPayload = {
-          contents: [{
-            parts: [
-              ...imageParts, // 분석할 여러 캐릭터 이미지 투척
-              { text: `당신은 프로 웹툰 작가입니다. 첨부된 ${filesArray.length}장의 레퍼런스 이미지들에 등장하는 캐릭터들의 고유한 외형, 스타일, 색감을 완벽히 파악하세요. 이를 바탕으로 다음 장면을 묘사하는 이미지 생성용 고해상도 영문 프롬프트(Webtoon, comic panel)를 단 한 문단으로 작성하세요. 캐릭터들의 디테일이 유지되어야 합니다. 장면: ${sceneText}` }
-            ]
-          }]
-        };
+        const geminiPayload = { contents: [{ parts: partsForGemini }] };
 
         const geminiResponse = await fetch(geminiUrl, {
           method: 'POST',
@@ -369,22 +535,17 @@
         
         const geminiData = await geminiResponse.json();
         
-        if (geminiData.error) throw new Error(`[Gemini 오류] ${geminiData.error.message}`);
+        if (geminiData.error) throw new Error(`[Gemini 분석 오류] ${geminiData.error.message}`);
         if (!geminiData.candidates) throw new Error("프롬프트 분석에 실패했습니다.");
 
         const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
-        
-        // UI 정리
-        setupSection.style.display = "none";
-        toggleBtn.style.display = "block";
 
-        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 분석된 프롬프트로 컷을 그리는 중입니다 (약 10초)...";
+        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 구글 Imagen 3 AI가 에피소드를 스케치하고 색칠하는 중입니다 (약 10초)...";
 
-        // 3. 구글 Imagen 3 를 활용한 직접 이미지 생성 (이미지 엔진)
-        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKeyInput}`;
+        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKeyInput}`;
         
         const imagenPayload = {
-          instances: [{ prompt: optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece" }],
+          instances: [{ prompt: optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece, cute" }],
           parameters: { sampleCount: 1, aspectRatio: "1:1" }
         };
 
@@ -396,15 +557,13 @@
 
         const imgData = await imgResponse.json();
 
-        if (imgData.error) throw new Error(`[Imagen 오류] ${imgData.error.message}`);
-        if (!imgData.predictions || !imgData.predictions[0].bytesBase64Encoded) throw new Error("구글 Imagen 응답에 이미지가 없습니다.");
+        if (imgData.error) throw new Error(`[Imagen 생성 오류] ${imgData.error.message}`);
+        if (!imgData.predictions || !imgData.predictions[0].bytesBase64Encoded) throw new Error("이미지가 정상적으로 생성되지 않았습니다.");
 
-        // Base64를 렌더링 가능하게 조립
         const base64Img = imgData.predictions[0].bytesBase64Encoded;
         const objectURL = "data:image/jpeg;base64," + base64Img;
-        window.currentImageUrl = objectURL; // 다운로드용 전역 변수 저장
+        window.currentImageUrl = objectURL; 
 
-        // 결과 화면 표출
         statusViewer.style.display = "none";
         resultCard.style.display = "block";
         resultImg.src = objectURL;
@@ -412,6 +571,8 @@
 
       } catch (error) {
         statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:800;">❌ 에러 발생</span><br><br><small style="color:#64748b;">${error.message}</small>`;
+        setupSection.style.display = "block";
+        toggleBtn.style.display = "none";
       }
     }
   </script>
