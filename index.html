@@ -6,7 +6,7 @@
   <title>나만의 귀여운 웹툰 제작실</title>
   
   <style>
-    /* 워드프레스 스타일 모던/큐트 테마 */
+    /* 워드프레스 스타일 모던/큐트 테마 유지 */
     html, body {
       margin: 0;
       padding: 0;
@@ -102,7 +102,7 @@
     }
 
     textarea.input-control {
-      height: 100px;
+      height: 80px;
       resize: none;
       line-height: 1.5;
     }
@@ -232,23 +232,27 @@
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     }
 
-    .image-container {
+    /* 다중 컷을 담을 컨테이너 */
+    #webtoon-panels-container {
       width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #f1f5f9;
-      border-radius: 12px;
-      margin-bottom: 16px;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
+      border-radius: 12px;
       overflow: hidden;
-      border: 1px solid #e2e8f0;
+      border: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+      background: #f1f5f9;
     }
 
-    .image-container img {
+    .webtoon-panel {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
+      display: block;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .webtoon-panel:last-child {
+      border-bottom: none;
     }
 
     .btn-download {
@@ -266,6 +270,11 @@
       justify-content: center;
       margin-bottom: 16px;
       box-shadow: 0 4px 0 #2563eb;
+    }
+
+    .btn-download:active {
+      transform: translateY(4px);
+      box-shadow: none;
     }
 
     .prompt-box {
@@ -304,7 +313,7 @@
 
           <div id="model-selectors">
             <span style="font-size: 0.85rem; font-weight: bold; color: #1e3a8a; margin-bottom: 12px; display: block;">✅ 기획 전용 AI 연동 완료</span>
-            <label class="model-select-label">기획/분석용 텍스트 모델 (Gemini)</label>
+            <label class="model-select-label">기획/분석용 텍스트 모델</label>
             <select id="text-model" class="input-control" style="margin-bottom: 4px; padding: 8px; font-size: 0.85rem;"></select>
           </div>
 
@@ -329,28 +338,51 @@
           </button>
           <textarea id="scene-text" class="input-control" placeholder="직접 입력하거나 위 추천 버튼을 눌러보세요!"></textarea>
         </div>
+
+        <!-- [신규] 컷 수 지정 & 그림체 선택 -->
+        <div class="char-input-grid" style="margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">🎬 컷 수 (분량)</label>
+            <select id="panel-count" class="input-control" style="padding: 10px;">
+              <option value="1">1컷 (단일 일러스트)</option>
+              <option value="2">2컷 (짧은 상황)</option>
+              <option value="3">3컷 (기승전)</option>
+              <option value="4" selected>4컷 만화 (기승전결)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">🖌️ 그림체 (화풍)</label>
+            <select id="art-style" class="input-control" style="padding: 10px;">
+              <option value="flat color webtoon style, comic panel, masterpiece, extremely cute, clear lines">기본 웹툰 (깔끔/단색)</option>
+              <option value="japanese anime style, studio ghibli, vivid and warm colors, detailed background">일본 애니메이션풍</option>
+              <option value="watercolor painting style, soft, emotional, fairy tale illustration">부드러운 수채화톤</option>
+              <option value="black and white manga style, screentone, ink pen, dynamic">흑백 출판 만화풍</option>
+              <option value="american comic book style, bold lines, vibrant retro colors, pop art">아메리칸 코믹스풍</option>
+            </select>
+          </div>
+        </div>
+
       </div>
 
-      <button class="btn-submit" onclick="startWebtoonPipeline()">✨ 일관성 만화 컷 그리기</button>
+      <button class="btn-submit" onclick="startWebtoonPipeline()">✨ 일관성 만화 생성하기</button>
     </div>
 
     <div id="canvas-area">
       <div id="status-viewer" class="status-text">
         1. API 키를 넣고 <strong>[연동🔄]</strong> 버튼을 누르세요.<br>
         2. 캐릭터 사진과 특징을 채우세요.<br>
-        3. <strong>[만화 컷 그리기]</strong> 버튼을 꾹 눌러주세요!
+        3. 컷 수와 그림체를 고른 뒤 <strong>[만화 생성하기]</strong> 버튼을 누르세요!
       </div>
       
       <div id="webtoon-result-card" class="webtoon-card" style="display: none;">
-        <div class="image-container">
-          <img id="result-img" src="" alt="AI 웹툰 생성 결과">
-        </div>
+        <!-- 생성된 여러 컷이 일렬로 들어갈 컨테이너 -->
+        <div id="webtoon-panels-container"></div>
         
         <button class="btn-download" onclick="downloadWebtoon()">
-          ⬇️ 내 폰에 갤러리로 저장하기
+          ⬇️ 만들어진 컷 모두 갤러리에 저장하기
         </button>
 
-        <div style="font-size: 0.9rem; font-weight: 800; color: #334155; text-align: left;">🤖 구글 기획 프롬프트 기록 :</div>
+        <div style="font-size: 0.9rem; font-weight: 800; color: #334155; text-align: left;">🤖 에피소드 프롬프트 구조 :</div>
         <div id="result-prompt" class="prompt-box"></div>
       </div>
     </div>
@@ -358,6 +390,7 @@
 
   <script>
     let charCount = 1;
+    window.currentImageUrls = []; // 다중 컷 다운로드를 위한 배열
 
     window.onload = function() {
       const savedKey = localStorage.getItem('gemini_free_api_key');
@@ -389,15 +422,19 @@
       setupSection.style.display = (setupSection.style.display === "none") ? "block" : "none";
     }
 
-    window.currentImageUrl = "";
+    // 여러 장의 이미지를 순차적으로 다운로드하도록 개선
     function downloadWebtoon() {
-      if (!window.currentImageUrl) return;
-      const a = document.createElement('a');
-      a.href = window.currentImageUrl;
-      a.download = `Webtoon_Cut_${new Date().getTime()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      if (!window.currentImageUrls || window.currentImageUrls.length === 0) return;
+      window.currentImageUrls.forEach((url, index) => {
+        setTimeout(() => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Webtoon_Panel_${index + 1}_${new Date().getTime()}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }, index * 400); // 브라우저 차단을 막기 위한 0.4초 딜레이
+      });
     }
 
     function fileToGenerativePart(file) {
@@ -478,6 +515,7 @@
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const textModelName = document.getElementById('text-model').value;
       const chars = getCharactersData();
+      const panelCount = document.getElementById('panel-count').value;
       
       if (!apiKeyInput) { alert("먼저 Gemini API Key를 입력해주세요!"); return; }
       if (!textModelName) { 
@@ -488,11 +526,11 @@
       if (chars.length === 0) { alert("최소 1명 이상의 캐릭터 이름과 특징을 적어주세요!"); return; }
 
       const sceneBox = document.getElementById('scene-text');
-      sceneBox.value = "구글 AI가 에피소드를 상상하고 있습니다...";
+      sceneBox.value = "구글 AI가 기승전결 스토리를 상상하고 있습니다...";
 
       try {
         let charDescriptions = chars.map(c => `- ${c.name} (특징: ${c.traits})`).join("\n");
-        const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 1문장짜리 에피소드 상황을 1개 추천해줘. 구구절절한 설명 없이 상황만 짧게 출력해.\n\n[등장인물]\n${charDescriptions}`;
+        const promptText = `다음 캐릭터 설정을 바탕으로, 귀엽고 명랑한 짧은 에피소드 스토리를 1개 추천해줘. 구구절절한 설명 없이 ${panelCount}컷 분량에 어울리도록 상황만 짧게 출력해.\n\n[등장인물]\n${charDescriptions}`;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${textModelName}:generateContent?key=${apiKeyInput}`;
         
@@ -516,10 +554,12 @@
       const apiKeyInput = document.getElementById('api-key').value.trim();
       const textModelName = document.getElementById('text-model').value;
       const sceneText = document.getElementById('scene-text').value.trim();
+      const panelCount = parseInt(document.getElementById('panel-count').value);
+      const artStyle = document.getElementById('art-style').value;
       
       const statusViewer = document.getElementById('status-viewer');
       const resultCard = document.getElementById('webtoon-result-card');
-      const resultImg = document.getElementById('result-img');
+      const panelsContainer = document.getElementById('webtoon-panels-container');
       const resultPrompt = document.getElementById('result-prompt');
       const setupSection = document.getElementById('setup-section');
       const toggleBtn = document.getElementById('toggle-btn');
@@ -539,7 +579,7 @@
       
       resultCard.style.display = "none";
       statusViewer.style.display = "block";
-      statusViewer.innerHTML = "⏳ <strong>[1/2 단계]</strong> 구글 Gemini가 기획/분석을 진행 중입니다...";
+      statusViewer.innerHTML = `⏳ <strong>[1/2 단계]</strong> 구글 Gemini가 ${panelCount}컷 스토리보드를 짜고 있습니다...`;
 
       try {
         let partsForGemini = [];
@@ -551,7 +591,15 @@
           partsForGemini.push(imagePart);
         }
 
-        partsForGemini.push({ text: `당신은 웹툰 기획자입니다. 위 캐릭터들이 등장하는 다음 장면을 아주 귀엽고 명랑한 애니메이션 화풍으로 생성하기 위한 '고해상도 영어 프롬프트(Webtoon, comic panel)'를 한 문단으로 작성하세요. 장면: ${sceneText}` });
+        // [중요 로직] 여러 컷의 일관성을 유지하며 프롬프트를 분할 추출하기 위한 JSON 형태 지시
+        partsForGemini.push({ text: `당신은 웹툰 기획자입니다. 위 캐릭터들이 등장하는 다음 스토리("${sceneText}")를 총 ${panelCount}개의 만화 컷(Panel)으로 분할 연출하세요.
+        
+        [필수 규칙]
+        1. 반드시 아래의 JSON 배열(Array of strings) 형태로만 응답하세요. 다른 부연 설명이나 마크다운 텍스트는 절대 출력하지 마세요.
+        2. 캐릭터의 외형 특징과 복장은 일관성을 위해 "모든 컷"의 프롬프트에 반복해서 포함해야 합니다.
+        3. 각 프롬프트는 이미지 생성을 위한 고품질의 영문 프롬프트여야 합니다.
+        
+        형식 예시: ["panel 1 description in english...", "panel 2 description in english...", ...]` });
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${textModelName}:generateContent?key=${apiKeyInput}`;
         
@@ -566,33 +614,52 @@
         const geminiData = await geminiResponse.json();
         
         if (geminiData.error) throw new Error(`[Gemini 기획 오류] ${geminiData.error.message}`);
-        if (!geminiData.candidates) throw new Error("프롬프트 기획에 실패했습니다.");
+        if (!geminiData.candidates) throw new Error("스토리보드 기획에 실패했습니다.");
 
-        const optimizedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
-
-        // 💡 2단계: 모바일 CORS 방화벽을 완전히 우회하는 개방형 이미지 AI (Pollinations) 적용
-        statusViewer.innerHTML = "🎨 <strong>[2/2 단계]</strong> 무료 그림 AI가 웹툰을 그리고 있습니다 (약 5~10초)...";
-
-        const enhancedPrompt = optimizedPrompt + ", flat color webtoon style, comic panel, masterpiece, extremely cute";
-        // fetch를 쓰지 않고 다이렉트로 이미지 URL을 조합하여 모바일 에러 원천 차단
-        const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&nologo=true`;
-
-        // 이미지를 캔버스로 불러와서 다운로드 가능하도록 Blob 처리 (CORS 허용된 서버)
-        const imgResponse = await fetch(imgUrl);
-
-        if (!imgResponse.ok) {
-          throw new Error("이미지 생성 서버에 일시적으로 연결할 수 없습니다.");
+        let jsonText = geminiData.candidates[0].content.parts[0].text.trim();
+        // 불필요한 마크다운 백틱 제거
+        jsonText = jsonText.replace(/^```json/i, '').replace(/```$/i, '').trim();
+        
+        let promptsArray = [];
+        try {
+          promptsArray = JSON.parse(jsonText);
+        } catch(e) {
+          throw new Error("AI가 컷 분할을 올바른 형식으로 기획하지 못했습니다. 다시 시도해주세요.");
         }
 
-        const imageBlob = await imgResponse.blob();
-        const objectURL = URL.createObjectURL(imageBlob);
+        // 💡 2단계: 여러 컷을 순차적으로 렌더링
+        statusViewer.innerHTML = `🎨 <strong>[2/2 단계]</strong> 기획된 ${panelCount}컷을 선택한 화풍으로 그리고 있습니다... (조금만 기다려주세요!)`;
+        
+        panelsContainer.innerHTML = ''; // 기존 이미지 초기화
+        window.currentImageUrls = [];
+        
+        // 일관성 강화를 위해 한 에피소드 안에서는 동일한 난수 시드 배정
+        const globalSeed = Math.floor(Math.random() * 1000000); 
 
-        window.currentImageUrl = objectURL; 
+        for(let i = 0; i < promptsArray.length; i++) {
+          // 캐릭터 외형 프롬프트 + 유저가 선택한 그림체 결합
+          const enhancedPrompt = `${promptsArray[i]}, ${artStyle}`;
+          
+          // Pollinations.ai 엔진 다이렉트 호출 (시드값 통일로 일관성 향상)
+          const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&nologo=true&seed=${globalSeed}`;
+          
+          const imgResponse = await fetch(imgUrl);
+          if (!imgResponse.ok) throw new Error(`컷 ${i+1} 렌더링 중 통신 문제가 발생했습니다.`);
+          
+          const imageBlob = await imgResponse.blob();
+          const objectURL = URL.createObjectURL(imageBlob);
+          window.currentImageUrls.push(objectURL);
+
+          // 화면에 컷 추가
+          const imgEl = document.createElement('img');
+          imgEl.src = objectURL;
+          imgEl.className = 'webtoon-panel';
+          panelsContainer.appendChild(imgEl);
+        }
 
         statusViewer.style.display = "none";
         resultCard.style.display = "block";
-        resultImg.src = objectURL;
-        resultPrompt.innerText = optimizedPrompt;
+        resultPrompt.innerText = JSON.stringify(promptsArray, null, 2);
 
       } catch (error) {
         statusViewer.innerHTML = `<span style="color:#ef4444; font-weight:800;">❌ 에러 발생</span><br><br><small style="color:#64748b;">${error.message}</small>`;
